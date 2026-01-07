@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { trpc } from '@/trpc/client';
-import { Calculator, Sparkles, Loader2, X, Brain } from 'lucide-react';
+import { useSession, signOut } from '@/lib/auth-client';
+import { Calculator, Sparkles, Loader2, X, Brain, LogOut } from 'lucide-react';
 import type { ComputationMode } from '@mathstream/shared';
 
 interface ComputeFormProps {
@@ -20,6 +22,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
   const [b, setB] = useState<string>('');
   const [mode, setMode] = useState<ComputationMode>('classic');
   const prevIsProcessing = useRef(isProcessing);
+  const { data: session } = useSession();
 
   const createMutation = trpc.computation.create.useMutation({
     onSuccess: (data) => {
@@ -28,6 +31,10 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
   });
 
   const isLoading = createMutation.isPending || isProcessing;
+
+  const handleSignOut = () => {
+    signOut({ callbackURL: '/' });
+  };
 
   // Clear inputs when computation completes
   useEffect(() => {
@@ -58,16 +65,79 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
   return (
     <Card className="bg-card border-border shadow-sm overflow-hidden border-t-4 border-t-primary">
       <CardHeader className="bg-muted border-b border-border/50">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-foreground flex items-center gap-2 text-lg font-black uppercase tracking-widest">
-              <Calculator className="h-5 w-5 text-secondary" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+          {/* Top Row: MathStream + User Info on mobile, side by side on desktop */}
+          <div className="flex items-center justify-between w-full sm:w-auto sm:justify-start gap-4 sm:gap-6">
+            {/* MathStream Branding */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-primary rounded-xl shadow-sm">
+                <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
+              </div>
+              <span className="text-base sm:text-xl font-bold text-primary">
+                MathStream
+              </span>
+            </div>
+            
+            {/* User Info - visible on mobile at top */}
+            {session?.user && (
+              <div className="flex items-center gap-2 sm:hidden">
+                <Avatar className="h-7 w-7 border border-border">
+                  <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                    {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors p-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          {/* Divider - hidden on mobile */}
+          <div className="hidden sm:block h-8 w-px bg-border/50" />
+          
+          {/* Computation Section */}
+          <div className="space-y-1 flex-1 sm:flex-none">
+            <CardTitle className="text-foreground flex items-center gap-2 text-base sm:text-lg font-black uppercase tracking-widest">
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
               New Computation
             </CardTitle>
-            <CardDescription className="text-foreground/60 font-bold text-[10px] uppercase tracking-wider">
+            <CardDescription className="text-foreground/60 font-bold text-[9px] sm:text-[10px] uppercase tracking-wider">
               Enter two numbers for parallel processing
             </CardDescription>
           </div>
+          
+          {/* User Info - desktop only */}
+          {session?.user && (
+            <div className="hidden sm:flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8 border border-border">
+                  <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
+                    {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-foreground font-medium text-sm">
+                  {session.user.name}
+                </span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleSignOut}
+                className="text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="ml-2 font-bold uppercase tracking-widest text-[10px]">Sign out</span>
+              </Button>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent className="pt-6">
