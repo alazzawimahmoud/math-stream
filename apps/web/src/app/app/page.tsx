@@ -5,7 +5,7 @@ import { ComputeForm } from '@/components/compute-form';
 import { ResultsTable } from '@/components/results-table';
 import { trpc } from '@/trpc/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { History, Loader2 } from 'lucide-react';
+import { History, Loader2, Calculator } from 'lucide-react';
 
 export default function AppPage() {
   const [currentComputationId, setCurrentComputationId] = useState<string | null>(null);
@@ -35,19 +35,28 @@ export default function AppPage() {
     setCurrentComputationId(id);
   };
 
+  const isProcessing = !!currentComputationId && (
+    !currentComputation || 
+    currentComputation._id !== currentComputationId ||
+    (currentComputation.status !== 'completed' && currentComputation.status !== 'failed')
+  );
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 pb-20">
       {/* Compute Form */}
-      <ComputeForm onComputationCreated={handleComputationCreated} />
+      <ComputeForm 
+        onComputationCreated={handleComputationCreated} 
+        isProcessing={isProcessing}
+      />
 
       {/* Current Computation Results */}
       {currentComputationId && (
         <div>
           {isLoadingCurrent && !currentComputation ? (
-            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-              <CardContent className="py-8 flex items-center justify-center">
-                <Loader2 className="h-6 w-6 text-violet-400 animate-spin mr-2" />
-                <span className="text-slate-400">Loading computation...</span>
+            <Card className="bg-card border-border shadow-sm overflow-hidden border-t-4 border-t-secondary animate-pulse">
+              <CardContent className="py-12 flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="h-8 w-8 text-secondary animate-spin" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">Initializing Engine Pipeline...</span>
               </CardContent>
             </Card>
           ) : currentComputation ? (
@@ -58,23 +67,23 @@ export default function AppPage() {
 
       {/* Computation History */}
       {history && history.length > 0 && (
-        <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <History className="h-5 w-5 text-violet-400" />
-              Recent Computations
+        <Card className="bg-card border-border shadow-sm overflow-hidden border-t-4 border-t-primary">
+          <CardHeader className="bg-muted border-b border-border/50">
+            <CardTitle className="text-foreground flex items-center gap-2 text-lg font-black uppercase tracking-widest">
+              <History className="h-5 w-5 text-primary" />
+              Execution History
             </CardTitle>
-            <CardDescription className="text-slate-400">
-              Your last 10 computations
+            <CardDescription className="text-foreground/60 font-bold text-[10px] uppercase tracking-wider">
+              Last 10 completed payloads
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {isLoadingHistory ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-5 w-5 text-violet-400 animate-spin" />
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3">
                 {history
                   .filter(c => c._id !== currentComputationId)
                   .slice(0, 5)
@@ -82,30 +91,39 @@ export default function AppPage() {
                     <button
                       key={computation._id}
                       onClick={() => setCurrentComputationId(computation._id)}
-                      className="w-full p-4 rounded-lg bg-slate-900/50 border border-slate-700 hover:border-violet-500/50 transition-colors text-left"
+                      className="w-full p-5 rounded-2xl bg-muted/30 border border-border/30 hover:border-primary/50 hover:bg-muted/50 transition-all text-left group"
                     >
                       <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-white font-medium">
-                            A = {computation.a}, B = {computation.b}
-                          </span>
-                          <span className="text-slate-500 text-sm ml-3">
-                            {computation.mode === 'ai' ? '✨ AI' : '🔢 Classic'}
-                          </span>
+                        <div className="flex items-center gap-5">
+                          <div className="p-2.5 bg-card rounded-xl border border-border/50 group-hover:border-primary/30 transition-all group-hover:scale-110">
+                            <Calculator className="h-5 w-5 text-primary/60 group-hover:text-primary transition-colors" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-foreground font-black uppercase tracking-[0.1em] text-sm">
+                              A = {computation.a} , B = {computation.b}
+                            </span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[9px] font-black text-foreground/30 uppercase tracking-widest">
+                                {computation.mode === 'ai' ? '✨ AI Enhanced Payload' : '🔢 Standard Mathematical Model'}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            computation.status === 'completed' 
-                              ? 'bg-green-500/20 text-green-400'
-                              : computation.status === 'processing'
-                              ? 'bg-yellow-500/20 text-yellow-400'
-                              : 'bg-slate-500/20 text-slate-400'
-                          }`}>
-                            {computation.status}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            {new Date(computation.createdAt).toLocaleTimeString()}
-                          </span>
+                        <div className="flex items-center gap-6">
+                          <div className="flex flex-col items-end gap-1.5">
+                            <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm border border-transparent ${
+                              computation.status === 'completed' 
+                                ? 'bg-secondary/10 text-secondary border-secondary/20'
+                                : computation.status === 'processing'
+                                ? 'bg-accent/10 text-accent border-accent/20'
+                                : 'bg-destructive/10 text-destructive border-destructive/20'
+                            }`}>
+                              {computation.status}
+                            </span>
+                            <span className="text-[9px] text-foreground/20 font-black uppercase tracking-tighter">
+                              {new Date(computation.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </button>
@@ -118,4 +136,3 @@ export default function AppPage() {
     </div>
   );
 }
-

@@ -2,7 +2,7 @@ import { Worker } from 'bullmq';
 import { getRedisConnection } from '@mathstream/queue';
 import { connectDb, closeDb } from '@mathstream/db';
 import type { JobPayload } from '@mathstream/shared';
-import { processJob } from './processor.js';
+import { processJob } from './processor';
 
 async function main() {
   await connectDb();

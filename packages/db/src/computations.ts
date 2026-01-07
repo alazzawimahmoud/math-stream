@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { getDb } from './client.js';
+import { getDb } from './client';
 import type { Computation, OperationType, Result, ComputationMode } from '@mathstream/shared';
 
 const COLLECTION = 'computations';

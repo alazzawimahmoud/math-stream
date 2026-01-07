@@ -1,15 +1,15 @@
-import IORedis from 'ioredis';
+import { Redis } from 'ioredis';
 import { getConfig, type Computation } from '@mathstream/shared';
 
-let redis: IORedis | null = null;
+let redis: Redis | null = null;
 
 const CACHE_PREFIX = 'mathstream:computation:';
 const CACHE_TTL_SECONDS = 3600; // 1 hour
 
-function getRedis(): IORedis {
+function getRedis(): Redis {
   if (!redis) {
     const { REDIS_URL } = getConfig();
-    redis = new IORedis(REDIS_URL);
+    redis = new Redis(REDIS_URL);
   }
   return redis;
 }

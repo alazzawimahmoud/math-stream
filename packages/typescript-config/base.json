@@ -8,15 +8,14 @@
     "incremental": false,
     "isolatedModules": true,
     "lib": ["ES2022"],
-    "module": "NodeNext",
+    "module": "ESNext",
     "moduleDetection": "force",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "bundler",
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2022",
-    "verbatimModuleSyntax": true
+    "target": "ES2022"
   },
   "exclude": ["node_modules"]
 }

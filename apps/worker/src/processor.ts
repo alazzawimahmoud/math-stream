@@ -1,8 +1,8 @@
 import type { Job } from 'bullmq';
 import { getConfig, type JobPayload } from '@mathstream/shared';
 import { updateResultProgress, updateResultComplete } from '@mathstream/db';
-import { calculateClassic } from './calculators/classic.js';
-import { calculateAI } from './calculators/ai.js';
+import { calculateClassic } from './calculators/classic';
+import { calculateAI } from './calculators/ai';
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));

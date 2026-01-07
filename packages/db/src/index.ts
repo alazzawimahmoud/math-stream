@@ -1,3 +1,3 @@
-export * from './client.js';
-export * from './computations.js';
+export * from './client';
+export * from './computations';
 

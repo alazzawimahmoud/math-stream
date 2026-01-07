@@ -1,14 +1,14 @@
 import { Queue } from 'bullmq';
-import IORedis from 'ioredis';
+import { Redis } from 'ioredis';
 import { getConfig, type JobPayload, type ComputationMode } from '@mathstream/shared';
 
-let connection: IORedis | null = null;
+let connection: Redis | null = null;
 let queue: Queue<JobPayload> | null = null;
 
-export function getRedisConnection(): IORedis {
+export function getRedisConnection(): Redis {
   if (!connection) {
     const { REDIS_URL } = getConfig();
-    connection = new IORedis(REDIS_URL, { maxRetriesPerRequest: null });
+    connection = new Redis(REDIS_URL, { maxRetriesPerRequest: null });
   }
   return connection;
 }
@@ -19,7 +19,7 @@ export function getComputationQueue(): Queue<JobPayload> {
       connection: getRedisConnection(),
     });
   }
-  return queue;
+  return queue!;
 }
 
 export async function addComputationJobs(

@@ -16,11 +16,11 @@
   },
   "dependencies": {
     "@mathstream/shared": "workspace:*",
-    "ioredis": "^5.4.2"
+    "ioredis": "5.8.2"
   },
   "devDependencies": {
     "@mathstream/typescript-config": "workspace:*",
+    "@types/node": "^20",
     "typescript": "^5.7.2"
   }
 }
-

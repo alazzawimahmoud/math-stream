@@ -22,7 +22,7 @@ If it's a division by zero, respond with "ERROR: Division by zero".
 If the result is a decimal, round to 6 decimal places.`;
 
     const { text } = await generateText({
-      model: google('gemini-1.5-flash'),
+      model: google('gemini-2.0-flash'),
       prompt,
     });
 
