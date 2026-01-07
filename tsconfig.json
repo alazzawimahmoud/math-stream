@@ -1,0 +1,4 @@
+{
+  "extends": "@mathstream/typescript-config/base.json"
+}
+
