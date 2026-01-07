@@ -200,6 +200,119 @@ pnpm clean         # Clean build artifacts
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini API key | Yes |
 | `JOB_DELAY_MS` | Artificial delay for jobs (default: 3000) | No |
 
+## Railway Deployment
+
+### Architecture on Railway
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Railway Cloud                           │
+│                                                             │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐   │
+│  │  Web Service  │  │    Worker     │  │   External    │   │
+│  │   (Next.js)   │  │   (BullMQ)    │  │   Services    │   │
+│  └───────┬───────┘  └───────┬───────┘  └───────────────┘   │
+│          │                  │                               │
+│          ▼                  ▼                               │
+│  ┌───────────────┐  ┌───────────────┐                      │
+│  │    MongoDB    │  │    Redis      │                      │
+│  │   (Plugin)    │  │   (Plugin)    │                      │
+│  └───────────────┘  └───────────────┘                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Deployment Steps
+
+1. **Push code to GitHub**
+
+```bash
+git push origin main
+```
+
+2. **Create Railway Project**
+   - Go to [Railway](https://railway.app/)
+   - Click "New Project" → "Deploy from GitHub repo"
+   - Select your repository
+
+3. **Add Database Plugins**
+   - Click "New" → "Database" → "Add MongoDB"
+   - Click "New" → "Database" → "Add Redis"
+
+4. **Configure Web Service**
+   - Click "New" → "GitHub Repo" → Select your repo
+   - Set the following:
+     - **Root Directory**: Leave empty (monorepo root)
+     - **Dockerfile Path**: `apps/web/Dockerfile`
+   - Add environment variables (see below)
+
+5. **Configure Worker Service**
+   - Click "New" → "GitHub Repo" → Select your repo
+   - Set the following:
+     - **Root Directory**: Leave empty (monorepo root)
+     - **Dockerfile Path**: `apps/worker/Dockerfile`
+   - Add environment variables (see below)
+
+6. **Set Environment Variables**
+
+For both Web and Worker services:
+
+| Variable | Value |
+|----------|-------|
+| `MONGODB_URL` | `${{MongoDB.MONGO_URL}}` (Railway reference) |
+| `REDIS_URL` | `${{Redis.REDIS_URL}}` (Railway reference) |
+| `BETTER_AUTH_SECRET` | Generate: `openssl rand -base64 32` |
+| `BETTER_AUTH_URL` | Your Railway web URL (e.g., `https://your-app.up.railway.app`) |
+| `GOOGLE_CLIENT_ID` | From Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | From Google Cloud Console |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | From Google AI Studio |
+| `JOB_DELAY_MS` | `3000` (optional) |
+
+7. **Update Google OAuth Redirect URI**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/) → Credentials
+   - Edit your OAuth 2.0 Client ID
+   - Add authorized redirect URI: `https://your-app.up.railway.app/api/auth/callback/google`
+
+8. **Deploy**
+   - Railway will automatically build and deploy both services
+   - Monitor deployment in the Railway dashboard
+
+### Environment Variable References
+
+Railway supports variable references between services:
+
+```
+MONGODB_URL=${{MongoDB.MONGO_URL}}
+REDIS_URL=${{Redis.REDIS_URL}}
+```
+
+This automatically injects the connection strings from the database plugins.
+
+### Scaling
+
+To scale the worker for higher throughput:
+
+1. Go to the Worker service in Railway
+2. Click "Settings" → "Scaling"
+3. Increase the number of replicas
+
+Each worker instance runs with `concurrency: 4`, so 2 replicas = 8 concurrent jobs.
+
+### Monitoring
+
+- **Logs**: Available in Railway dashboard for each service
+- **Metrics**: Railway provides CPU, memory, and network metrics
+- **Job Queue**: Connect to Redis and use BullMQ dashboard tools
+
+### Costs
+
+Railway's pricing is usage-based:
+- **Web Service**: ~$5-10/month for light usage
+- **Worker Service**: ~$5-10/month for light usage
+- **MongoDB**: ~$5/month for 1GB
+- **Redis**: ~$3/month for 512MB
+
+Estimated total: ~$18-28/month for a basic deployment.
+
 ## License
 
 MIT
