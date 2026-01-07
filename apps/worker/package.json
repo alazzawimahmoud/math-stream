@@ -1,0 +1,26 @@
+{
+  "name": "@mathstream/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^1.0.12",
+    "@mathstream/db": "workspace:*",
+    "@mathstream/queue": "workspace:*",
+    "@mathstream/shared": "workspace:*",
+    "ai": "^4.0.30",
+    "bullmq": "^5.34.3"
+  },
+  "devDependencies": {
+    "@mathstream/typescript-config": "workspace:*",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
+
