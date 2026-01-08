@@ -68,16 +68,17 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
 
   return (
     <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary w-full">
-      <CardHeader className="bg-muted border-b border-border/50 h-[44px] sm:h-[56px] py-1 sm:py-1.5 px-2 sm:px-3">
+      <CardHeader className="bg-muted border-b border-border/50 h-[44px] sm:h-[72px] py-1 sm:py-1.5 px-2 sm:px-3">
         <div className="flex items-center justify-between w-full h-full">
           {/* MathStream Branding */}
           <div className="flex items-center gap-1.5 sm:gap-3">
             <Image 
               src="/logo.png" 
               alt="MathStream" 
-              width={36}
-              height={36}
-              className="h-6 w-6 sm:h-9 sm:w-9"
+              width={108}
+              height={108}
+              quality={95}
+              className="h-10 w-10 sm:h-11 sm:w-11"
               priority
             />
             <span className="text-xs sm:text-lg font-bold text-primary">

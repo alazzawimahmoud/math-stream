@@ -124,7 +124,7 @@ function AppContent() {
         {/* Left Column: History (Full Height) */}
         <div className="lg:col-span-1 flex flex-col order-3 lg:order-1 lg:min-h-0 w-full flex-1 lg:flex-none">
           <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary flex flex-col flex-1 lg:h-full w-full relative">
-        <CardHeader className="bg-muted border-b border-border/50 shrink-0 h-[44px] sm:h-[56px] py-1 sm:py-1.5 px-2 sm:px-3">
+        <CardHeader className="bg-muted border-b border-border/50 shrink-0 h-[44px] sm:h-[72px] py-1 sm:py-1.5 px-2 sm:px-3">
           <div className="flex items-center h-full gap-1 sm:gap-1.5">
             <History className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
             <div className="space-y-0">
