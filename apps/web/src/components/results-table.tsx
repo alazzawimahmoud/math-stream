@@ -48,56 +48,68 @@ const statusConfig = {
 export function ResultsTable({ computation }: ResultsTableProps) {
   return (
     <Card className="bg-card border-border shadow-sm overflow-hidden border-t-4 border-t-secondary">
-      <CardHeader className="bg-muted border-b border-border/50 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-foreground text-lg font-black uppercase tracking-widest">
-              Computation Engine
-            </CardTitle>
-            <div className="text-[10px] text-foreground/40 font-black uppercase tracking-[0.2em] flex items-center gap-3">
+      <CardHeader className="bg-muted border-b border-border/50 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between sm:justify-start">
+              <CardTitle className="text-foreground text-base font-black uppercase tracking-widest">
+                Computation Engine
+              </CardTitle>
+              {/* Icons only for mobile */}
+              <div className="flex items-center gap-2 sm:hidden">
+                {computation.mode === 'ai' && (
+                  <Sparkles className="h-5 w-5 text-accent" />
+                )}
+                {computation.fromCache && (
+                  <Database className="h-5 w-5 text-primary" />
+                )}
+              </div>
+            </div>
+            <div className="text-[9px] text-foreground/40 font-black uppercase tracking-[0.2em] flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-secondary"></span> A: {computation.a}</span>
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-accent"></span> B: {computation.b}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          {/* Badges with labels for desktop */}
+          <div className="hidden sm:flex items-center gap-2">
             {computation.mode === 'ai' && (
-              <Badge variant="secondary" className="bg-accent text-accent-foreground border-transparent font-black uppercase tracking-widest text-[9px] px-3 py-1.5 shadow-lg shadow-accent/10">
-                <Sparkles className="h-3 w-3 mr-1.5" />
+              <Badge variant="secondary" className="bg-accent text-accent-foreground border-transparent font-black uppercase tracking-widest text-[8px] px-2 py-1 shadow-lg shadow-accent/10">
+                <Sparkles className="h-2.5 w-2.5 mr-1" />
                 AI Enhanced
               </Badge>
             )}
             {computation.fromCache && (
-              <Badge variant="secondary" className="bg-primary text-primary-foreground border-transparent font-black uppercase tracking-widest text-[9px] px-3 py-1.5 shadow-lg shadow-primary/10">
-                <Database className="h-3 w-3 mr-1.5" />
+              <Badge variant="secondary" className="bg-primary text-primary-foreground border-transparent font-black uppercase tracking-widest text-[8px] px-2 py-1 shadow-lg shadow-primary/10">
+                <Database className="h-2.5 w-2.5 mr-1" />
                 Buffered
               </Badge>
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-8">
+      <CardContent className="pt-4 sm:pt-6">
         {/* Total Progress */}
-        <div className="mb-10 p-6 bg-muted/50 rounded-2xl border border-border/50 relative overflow-hidden">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted/50 rounded-xl border border-border/50 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">Total Execution Payload</span>
-            <span className="text-xl font-black text-secondary font-mono tracking-tighter">{computation.totalProgress}%</span>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/40">Total Execution Payload</span>
+            <span className="text-sm font-black text-secondary font-mono tracking-tighter">{computation.totalProgress}%</span>
           </div>
           <Progress 
             value={computation.totalProgress} 
-            className="h-4 bg-muted border border-border shadow-inner"
+            className="h-3 bg-muted border border-border shadow-inner"
           />
         </div>
 
         {/* Results Table */}
-        <div className="rounded-2xl border border-border/50 overflow-hidden shadow-inner bg-muted/20">
-          <Table>
+        <div className="rounded-2xl border border-border/50 overflow-hidden shadow-inner bg-muted/20 overflow-x-auto">
+          <Table className="min-w-[600px]">
             <TableHeader>
               <TableRow className="bg-muted border-border/50 hover:bg-muted transition-none">
-                <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 py-5 px-6">Operation</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 py-5 px-6">Pipeline</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 py-5 px-6">Computed Value</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 text-right py-5 px-6">Status</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 py-2 sm:py-3 px-2 sm:px-4">Operation</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 py-2 sm:py-3 px-2 sm:px-4">Pipeline</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 py-2 sm:py-3 px-2 sm:px-4">Computed Value</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 text-right py-2 sm:py-3 px-2 sm:px-4">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -108,24 +120,24 @@ export function ResultsTable({ computation }: ResultsTableProps) {
                 
                 return (
                   <TableRow key={result.operation} className="border-border/50 hover:bg-card transition-all group">
-                    <TableCell className="text-foreground font-black uppercase tracking-wider text-xs py-6 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-1.5 h-6 bg-border group-hover:bg-secondary transition-colors rounded-full"></div>
+                    <TableCell className="text-foreground font-black uppercase tracking-wider text-xs py-2.5 sm:py-3.5 px-2 sm:px-4">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <div className="w-1 h-4 bg-border group-hover:bg-secondary transition-colors rounded-full"></div>
                         {operationLabels[result.operation]}
                       </div>
                     </TableCell>
-                    <TableCell className="w-[220px] py-6 px-6">
-                      <div className="flex items-center gap-4">
+                    <TableCell className="w-[220px] py-2.5 sm:py-3.5 px-2 sm:px-4">
+                      <div className="flex items-center gap-1.5 sm:gap-3">
                         <Progress 
                           value={result.progress} 
-                          className="h-2 flex-1 bg-muted border border-border/50"
+                          className="h-1.5 flex-1 bg-muted border border-border/50"
                         />
-                        <span className="text-[10px] font-black text-foreground/30 w-10 text-right font-mono tracking-tighter">
+                        <span className="text-[9px] font-black text-foreground/30 w-9 text-right font-mono tracking-tighter">
                           {result.progress}%
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-foreground font-mono font-black text-lg py-6 px-6">
+                    <TableCell className="text-foreground font-mono font-black text-sm sm:text-base py-2.5 sm:py-3.5 px-2 sm:px-4">
                       {result.status === 'completed' && result.result !== null ? (
                         <div className="flex items-center gap-2">
                           <span className="text-secondary tabular-nums">{result.result}</span>
@@ -139,12 +151,12 @@ export function ResultsTable({ computation }: ResultsTableProps) {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="text-right py-6 px-6">
+                    <TableCell className="text-right py-2.5 sm:py-3.5 px-2 sm:px-4">
                       <Badge 
                         variant="secondary" 
-                        className={`${status.bgColor} ${status.color} border-transparent font-black uppercase tracking-widest text-[9px] px-3 py-1.5 shadow-sm transition-transform group-hover:scale-105`}
+                        className={`${status.bgColor} ${status.color} border-transparent font-black uppercase tracking-widest text-[8px] px-1.5 sm:px-2 py-1 shadow-sm transition-transform group-hover:scale-105`}
                       >
-                        <StatusIcon className={`h-3 w-3 mr-2 ${isAnimating ? 'animate-spin' : ''}`} />
+                        <StatusIcon className={`h-2.5 w-2.5 mr-1 sm:mr-1.5 ${isAnimating ? 'animate-spin' : ''}`} />
                         {status.label}
                       </Badge>
                     </TableCell>
