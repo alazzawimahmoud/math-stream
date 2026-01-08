@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { History, Loader2, Calculator, Sparkles } from 'lucide-react';
 import { CalculatorIcon } from '@/components/icons/calculator';
 import { GoogleIcon } from '@/components/icons/google';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { LogoutButton } from '@/components/logout-button';
 import { useSession, signIn } from '@/lib/auth-client';
 import type { Computation } from '@mathstream/shared';
 
@@ -117,11 +119,11 @@ function AppContent() {
   );
 
   return (
-    <div className="w-full lg:w-[80%] lg:min-w-[80%] mx-auto lg:h-full flex flex-col">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4 lg:flex-1 lg:min-h-0">
+    <div className="w-full lg:w-[80%] lg:min-w-[80%] mx-auto min-h-full lg:h-full flex flex-col flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4 flex-1 lg:min-h-0">
         {/* Left Column: History (Full Height) */}
-        <div className="lg:col-span-1 flex flex-col order-3 lg:order-1 lg:min-h-0 w-full">
-          <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary flex flex-col lg:h-full w-full relative">
+        <div className="lg:col-span-1 flex flex-col order-3 lg:order-1 lg:min-h-0 w-full flex-1 lg:flex-none">
+          <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary flex flex-col flex-1 lg:h-full w-full relative">
         <CardHeader className="bg-muted border-b border-border/50 shrink-0 h-[56px] py-1.5 px-3">
           <div className="flex items-center h-full gap-1.5">
             <History className="h-4 w-4 text-primary shrink-0" />
@@ -135,7 +137,7 @@ function AppContent() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className={`pt-3 lg:flex-1 lg:overflow-y-auto px-3 ${hasMoreHistory ? 'pb-16' : ''}`}>
+        <CardContent className={`pt-3 flex-1 overflow-y-auto px-3 ${hasMoreHistory ? 'pb-16' : ''}`}>
           {isSessionLoading ? (
             <div className="flex flex-col items-center justify-center space-y-3 py-8">
               <Loader2 className="h-6 w-6 text-foreground/20 animate-spin" />
@@ -281,7 +283,7 @@ function AppContent() {
         </div>
 
         {/* Right Column: Computation Form + Results */}
-        <div className="lg:col-span-2 flex flex-col gap-3 order-1 lg:order-2 lg:min-h-0 w-full">
+        <div className="lg:col-span-2 flex flex-col gap-3 order-1 lg:order-2 lg:min-h-0 w-full flex-1 lg:flex-none">
           {/* Compute Form */}
           <div className="shrink-0 w-full">
             <ComputeForm 
@@ -291,25 +293,25 @@ function AppContent() {
           </div>
 
           {/* Computation Results */}
-          <div className="lg:flex-1 lg:min-h-0 flex flex-col w-full">
+          <div className="flex-1 lg:min-h-0 flex flex-col w-full">
             {currentComputationId ? (
               <>
                 {isLoadingCurrent && !currentComputation ? (
-                  <Card key="loading" className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary/30 lg:flex-1 w-full animate-fade-in">
-                    <CardContent className="flex flex-col items-center justify-center space-y-3 py-12 lg:h-full">
+                  <Card key="loading" className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary/30 flex-1 w-full animate-fade-in">
+                    <CardContent className="flex flex-col items-center justify-center space-y-3 py-12 h-full">
                       <Loader2 className="h-12 w-12 text-foreground/20 animate-spin" />
                       <span className="text-[9px] font-black uppercase  text-foreground/40">Loading Computation...</span>
                     </CardContent>
                   </Card>
                 ) : currentComputation ? (
-                  <div key={currentComputation._id} className="lg:flex-1 lg:min-h-0 w-full animate-fade-in">
+                  <div key={currentComputation._id} className="flex-1 lg:min-h-0 w-full animate-fade-in">
                     <ResultsTable computation={currentComputation} />
                   </div>
                 ) : null}
               </>
             ) : (
-              <Card key="empty" className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary/30 lg:flex-1 w-full animate-fade-in">
-                <CardContent className="flex flex-col items-center justify-center space-y-3 py-12 lg:h-full">
+              <Card key="empty" className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary/30 flex-1 w-full animate-fade-in">
+                <CardContent className="flex flex-col items-center justify-center space-y-3 py-12 h-full">
                   <CalculatorIcon size="lg" />
                   <span className="text-[9px] font-black uppercase  text-foreground/40">Select a computation from history or run a new one</span>
                 </CardContent>
@@ -325,8 +327,13 @@ function AppContent() {
 export default function Page() {
   return (
     <TRPCProvider>
-      <div className="min-h-screen lg:h-screen bg-background flex flex-col">
-        <main className="container mx-auto px-4 py-4 flex-1 lg:flex lg:flex-col lg:min-h-0">
+      <div className="min-h-screen lg:h-screen bg-background flex flex-col relative">
+        {/* Theme Toggle & Logout - desktop only (mobile shows in header) */}
+        <div className="hidden sm:flex fixed top-4 right-4 z-50 flex-col gap-2">
+          <ThemeToggle />
+          <LogoutButton />
+        </div>
+        <main className="container mx-auto px-4 py-4 flex-1 flex flex-col lg:min-h-0">
           <AppContent />
         </main>
       </div>

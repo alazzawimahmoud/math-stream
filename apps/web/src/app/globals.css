@@ -88,37 +88,37 @@
 }
 
 .dark {
-  --background: #e6e6e6;
-  --foreground: #1C1C1C;
-  --card: #ffffff;
-  --card-foreground: #1C1C1C;
-  --popover: #ffffff;
-  --popover-foreground: #1C1C1C;
-  --primary: #03A6A1;
+  --background: #1C1C1C;
+  --foreground: #E7DECF;
+  --card: #2A2723;
+  --card-foreground: #E7DECF;
+  --popover: #2A2723;
+  --popover-foreground: #E7DECF;
+  --primary: #04C4BE;
   --primary-foreground: #1C1C1C;
-  --secondary: #E67514;
-  --secondary-foreground: #ffffff;
-  --muted: #f5f5f5;
-  --muted-foreground: #1C1C1C;
-  --accent: #E67514;
-  --accent-foreground: #ffffff;
-  --destructive: #E67514;
-  --border: rgba(28, 28, 28, 0.15);
-  --input: #ffffff;
-  --ring: #03A6A1;
-  --chart-1: #03A6A1;
-  --chart-2: #E67514;
-  --chart-3: #1C1C1C;
-  --chart-4: #03A6A1;
-  --chart-5: #1C1C1C;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1C1C1C;
-  --sidebar-primary: #03A6A1;
+  --secondary: #F58A2E;
+  --secondary-foreground: #1C1C1C;
+  --muted: #3A3632;
+  --muted-foreground: #04C4BE;
+  --accent: #F58A2E;
+  --accent-foreground: #1C1C1C;
+  --destructive: #F58A2E;
+  --border: #4A453F;
+  --input: #2A2723;
+  --ring: #04C4BE;
+  --chart-1: #04C4BE;
+  --chart-2: #F58A2E;
+  --chart-3: #E7DECF;
+  --chart-4: #04C4BE;
+  --chart-5: #E7DECF;
+  --sidebar: #1C1C1C;
+  --sidebar-foreground: #E7DECF;
+  --sidebar-primary: #04C4BE;
   --sidebar-primary-foreground: #1C1C1C;
-  --sidebar-accent: #E67514;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(28, 28, 28, 0.15);
-  --sidebar-ring: #03A6A1;
+  --sidebar-accent: #F58A2E;
+  --sidebar-accent-foreground: #1C1C1C;
+  --sidebar-border: #4A453F;
+  --sidebar-ring: #04C4BE;
 }
 
 @layer base {
@@ -127,6 +127,37 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Custom scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }
 

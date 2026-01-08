@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { trpc } from '@/trpc/client';
-import { useSession, signOut, signIn } from '@/lib/auth-client';
-import { Calculator, Sparkles, Loader2, LogOut } from 'lucide-react';
+import { useSession, signIn } from '@/lib/auth-client';
+import { Calculator, Sparkles, Loader2 } from 'lucide-react';
 import { GoogleIcon } from '@/components/icons/google';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { LogoutButton } from '@/components/logout-button';
 import Image from 'next/image';
 import type { ComputationMode } from '@mathstream/shared';
 
@@ -32,10 +34,6 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
 
   const isLoading = createMutation.isPending || isProcessing;
   const isSignedIn = !!session?.user;
-
-  const handleSignOut = () => {
-    signOut({ callbackURL: '/' });
-  };
 
   const handleSignIn = () => {
     signIn.social({ provider: 'google', callbackURL: '/' });
@@ -91,37 +89,34 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
             
             {/* User Info or Sign In - visible on mobile at top */}
             {isSessionLoading ? null : session?.user ? (
-              <div className="flex items-center gap-2 sm:hidden">
+              <div className="flex items-center gap-1.5 sm:hidden">
                 <Avatar className="h-7 w-7 border border-border">
                   <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
                     {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors p-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
+                <ThemeToggle />
+                <LogoutButton />
               </div>
             ) : (
-              <Button
-                onClick={handleSignIn}
-                size="sm"
-                className="sm:hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase  text-[10px] px-4 py-2"
-              >
-                <GoogleIcon className="h-3.5 w-3.5 mr-1.5" />
-                Sign In
-              </Button>
+              <div className="flex items-center gap-1.5 sm:hidden">
+                <ThemeToggle />
+                <Button
+                  onClick={handleSignIn}
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[10px] px-4 py-2"
+                >
+                  <GoogleIcon className="h-3.5 w-3.5 mr-1.5" />
+                  Sign In
+                </Button>
+              </div>
             )}
           </div>
           
           {/* User Info or Sign In - desktop only */}
           {isSessionLoading ? null : session?.user ? (
-            <div className="hidden sm:flex items-center gap-4">
+            <div className="hidden sm:flex items-center">
               <div className="relative group flex items-center">
                 <span className="absolute right-full mr-2 px-2 py-1 bg-card border border-border rounded text-foreground font-medium text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg">
                   {session.user.name?.split(' ')[0] ?? 'User'}
@@ -133,14 +128,6 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={handleSignOut}
-                className="text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors h-8 w-8"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
             </div>
           ) : (
             <Button
