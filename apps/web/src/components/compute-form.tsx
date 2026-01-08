@@ -74,9 +74,9 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
   };
 
   return (
-    <Card className="bg-card border-border shadow-sm overflow-hidden border-t-4 border-t-primary">
-      <CardHeader className="bg-muted border-b border-border/50">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+    <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary">
+      <CardHeader className="bg-muted border-b border-border/50 h-[70px] py-2 px-4">
+        <div className="flex items-center justify-between w-full h-full">
           {/* Top Row: MathStream + User Info on mobile, side by side on desktop */}
           <div className="flex items-center justify-between w-full sm:w-auto sm:justify-start gap-4 sm:gap-6">
             {/* MathStream Branding */}
@@ -167,7 +167,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
         </div>
       </CardHeader>
       <CardContent className="pt-4">
-        <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-border/40">
+        <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-border/40">
           <div className="p-0.5 bg-secondary/20 rounded">
             <Calculator className="h-2.5 w-2.5 text-secondary" />
           </div>
@@ -207,7 +207,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
           {/* Mode Toggle */}
           <div className={`flex flex-col gap-3 p-3 sm:p-4 bg-muted/50 rounded-lg border border-border/50 transition-all ${isLoading || !isSignedIn ? 'opacity-50 grayscale' : ''}`}>
             {/* Stacked on mobile, horizontal on larger screens */}
-            <div className="flex flex-col md:flex-row gap-3">
+            <div className="flex flex-col md:flex-row md:items-start gap-3">
               {/* Classic Mode Option */}
               <button
                 type="button"

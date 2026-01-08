@@ -55,15 +55,19 @@ export default function AppPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Left Column: History (Full Height) */}
         <div className="lg:col-span-1 flex flex-col order-3 lg:order-1">
-          <Card className="bg-card border-border shadow-sm overflow-hidden border-t-4 border-t-primary flex flex-col h-full">
-        <CardHeader className="bg-muted border-b border-border/50 shrink-0">
-          <CardTitle className="text-foreground flex items-center gap-1.5 text-base font-black uppercase tracking-widest">
-            <History className="h-4 w-4 text-primary" />
-            Execution History
-          </CardTitle>
-          <CardDescription className="text-foreground/60 font-bold text-[9px] uppercase tracking-wider">
-            {isSignedIn ? 'Last 10 completed payloads' : 'Sign in to view your computation history'}
-          </CardDescription>
+          <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary flex flex-col h-full">
+        <CardHeader className="bg-muted border-b border-border/50 shrink-0 h-[70px] py-2 px-4">
+          <div className="flex items-center h-full">
+            <div className="space-y-0.5">
+              <CardTitle className="text-foreground flex items-center gap-1.5 text-base font-black uppercase tracking-widest">
+                <History className="h-4 w-4 text-primary" />
+                Execution History
+              </CardTitle>
+              <CardDescription className="text-foreground/60 font-bold text-[9px] uppercase tracking-wider">
+                {isSignedIn ? 'Last 10 completed payloads' : 'Sign in to view your computation history'}
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="pt-4 flex-1 overflow-y-auto">
           {!isSignedIn ? (
@@ -198,7 +202,7 @@ export default function AppPage() {
           {currentComputationId ? (
             <div>
               {isLoadingCurrent && !currentComputation ? (
-                <Card className="bg-card border-border shadow-sm overflow-hidden border-t-4 border-t-secondary animate-pulse">
+                <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary animate-pulse">
                   <CardContent className="py-8 flex flex-col items-center justify-center space-y-3">
                     <Loader2 className="h-6 w-6 text-secondary animate-spin" />
                     <span className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/40">Initializing Engine Pipeline...</span>
@@ -209,7 +213,7 @@ export default function AppPage() {
               ) : null}
             </div>
           ) : (
-            <Card className="bg-card border-border shadow-sm overflow-hidden border-t-4 border-t-secondary/30">
+            <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary/30">
               <CardContent className="py-16 flex flex-col items-center justify-center space-y-3">
                 <Calculator className="h-12 w-12 text-foreground/20" />
                 <span className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/40">Select a computation from history or run a new one</span>

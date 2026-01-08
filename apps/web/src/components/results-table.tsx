@@ -47,11 +47,11 @@ const statusConfig = {
 
 export function ResultsTable({ computation }: ResultsTableProps) {
   return (
-    <Card className="bg-card border-border shadow-sm overflow-hidden border-t-4 border-t-secondary">
-      <CardHeader className="bg-muted border-b border-border/50 pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between sm:justify-start">
+    <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary">
+      <CardHeader className="bg-muted border-b border-border/50 h-[70px] py-2 px-4">
+        <div className="flex items-center justify-between w-full h-full">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
               <CardTitle className="text-foreground text-base font-black uppercase tracking-widest">
                 Computation Engine
               </CardTitle>
@@ -65,7 +65,7 @@ export function ResultsTable({ computation }: ResultsTableProps) {
                 )}
               </div>
             </div>
-            <div className="text-[9px] text-foreground/40 font-black uppercase tracking-[0.2em] flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+            <div className="text-[9px] text-foreground/40 font-black uppercase tracking-[0.2em] flex items-center gap-2">
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-secondary"></span> A: {computation.a}</span>
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-accent"></span> B: {computation.b}</span>
             </div>
@@ -91,7 +91,7 @@ export function ResultsTable({ computation }: ResultsTableProps) {
         {/* Total Progress */}
         <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-muted/50 rounded-xl border border-border/50 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/40">Total Execution Payload</span>
             <span className="text-sm font-black text-secondary font-mono tracking-tighter">{computation.totalProgress}%</span>
           </div>
@@ -106,10 +106,10 @@ export function ResultsTable({ computation }: ResultsTableProps) {
           <Table className="min-w-[600px]">
             <TableHeader>
               <TableRow className="bg-muted border-border/50 hover:bg-muted transition-none">
-                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 py-2 sm:py-3 px-2 sm:px-4">Operation</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 py-2 sm:py-3 px-2 sm:px-4">Pipeline</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 py-2 sm:py-3 px-2 sm:px-4">Computed Value</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 text-right py-2 sm:py-3 px-2 sm:px-4">Status</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 py-2 px-2 sm:px-4">Operation</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 py-2 px-2 sm:px-4">Pipeline</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 py-2 px-2 sm:px-4">Computed Value</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 text-right py-2 px-2 sm:px-4">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
