@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "dev": "tsx watch --env-file=../web/.env src/index.ts",
     "start": "node dist/index.js",
     "lint": "tsc --noEmit"
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@mathstream/typescript-config": "workspace:*",
     "@types/node": "^20",
+    "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
