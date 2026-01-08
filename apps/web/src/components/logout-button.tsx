@@ -19,10 +19,10 @@ export function LogoutButton() {
       variant="ghost"
       size="icon"
       onClick={handleSignOut}
-      className="h-8 w-8 rounded-full bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
+      className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
       aria-label="Sign out"
     >
-      <LogOut className="h-4 w-4" />
+      <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
     </Button>
   );
 }

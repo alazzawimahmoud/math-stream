@@ -68,55 +68,52 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
 
   return (
     <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary w-full">
-      <CardHeader className="bg-muted border-b border-border/50 h-[56px] py-1.5 px-3">
+      <CardHeader className="bg-muted border-b border-border/50 h-[44px] sm:h-[56px] py-1 sm:py-1.5 px-2 sm:px-3">
         <div className="flex items-center justify-between w-full h-full">
-          {/* Top Row: MathStream + User Info on mobile, side by side on desktop */}
-          <div className="flex items-center justify-between w-full sm:w-auto sm:justify-start gap-4 sm:gap-6">
-            {/* MathStream Branding */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Image 
-                src="/logo.png" 
-                alt="MathStream" 
-                width={36}
-                height={36}
-                className="h-8 w-8 sm:h-9 sm:w-9"
-                priority
-              />
-              <span className="text-sm sm:text-lg font-bold text-primary">
-                MathStream
-              </span>
-            </div>
-            
-            {/* User Info or Sign In - visible on mobile at top */}
-            {isSessionLoading ? null : session?.user ? (
-              <div className="flex items-center gap-1.5 sm:hidden">
-                <Avatar className="h-7 w-7 border border-border">
-                  <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
-                    {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <ThemeToggle />
-                <LogoutButton />
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 sm:hidden">
-                <ThemeToggle />
-                <Button
-                  onClick={handleSignIn}
-                  size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[10px] px-4 py-2"
-                >
-                  <GoogleIcon className="h-3.5 w-3.5 mr-1.5" />
-                  Sign In
-                </Button>
-              </div>
-            )}
+          {/* MathStream Branding */}
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            <Image 
+              src="/logo.png" 
+              alt="MathStream" 
+              width={36}
+              height={36}
+              className="h-6 w-6 sm:h-9 sm:w-9"
+              priority
+            />
+            <span className="text-xs sm:text-lg font-bold text-primary">
+              MathStream
+            </span>
           </div>
           
-          {/* User Info or Sign In - desktop only */}
+          {/* User controls - visible below lg */}
           {isSessionLoading ? null : session?.user ? (
-            <div className="hidden sm:flex items-center">
+            <div className="flex items-center gap-1.5 sm:gap-2 lg:hidden">
+              <Avatar className="h-6 w-6 sm:h-7 sm:w-7 border border-border">
+                <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold">
+                  {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <ThemeToggle />
+              <LogoutButton />
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 sm:gap-2 lg:hidden">
+              <ThemeToggle />
+              <Button
+                onClick={handleSignIn}
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[9px] sm:text-[10px] px-2 sm:px-4 py-1.5 sm:py-2 h-6 sm:h-auto"
+              >
+                <GoogleIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
+                Sign In
+              </Button>
+            </div>
+          )}
+          
+          {/* User controls - large screens only */}
+          {isSessionLoading ? null : session?.user ? (
+            <div className="hidden lg:flex items-center">
               <div className="relative group flex items-center">
                 <span className="absolute right-full mr-2 px-2 py-1 bg-card border border-border rounded text-foreground font-medium text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg">
                   {session.user.name?.split(' ')[0] ?? 'User'}
@@ -133,7 +130,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
             <Button
               onClick={handleSignIn}
               size="sm"
-              className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase  text-[10px] px-6 py-2"
+              className="hidden lg:flex bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[10px] px-6 py-2"
             >
               <GoogleIcon className="h-3.5 w-3.5 mr-1.5" />
               Sign In
@@ -141,16 +138,16 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
           )}
         </div>
       </CardHeader>
-      <CardContent className="pt-3 pb-3">
-        <div className="mb-2 pb-1.5 border-b border-border/40">
-          <p className="text-foreground/80 text-[10px] font-black uppercase">Enter two numbers to compute</p>
+      <CardContent className="pt-2 pb-2 sm:pt-3 sm:pb-3 px-2 sm:px-6">
+        <div className="mb-1.5 sm:mb-2 pb-1 sm:pb-1.5 border-b border-border/40">
+          <p className="text-foreground/80 text-[9px] sm:text-[10px] font-black uppercase">Enter two numbers to compute</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-2.5">
+        <form onSubmit={handleSubmit} className="space-y-1.5 sm:space-y-2.5">
           {/* Inputs row */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase  text-foreground/40">Number A</label>
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+            <div className="space-y-0.5 sm:space-y-1">
+              <label className="text-[8px] sm:text-[9px] font-black uppercase text-foreground/40">Number A</label>
               <Input
                 type="number"
                 step="any"
@@ -158,12 +155,12 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                 value={a}
                 onChange={(e) => setA(e.target.value)}
                 disabled={isLoading || !isSignedIn}
-                className="bg-muted/30 border-border text-foreground placeholder:text-foreground/20 focus-visible:ring-secondary h-8 text-base font-mono"
+                className="bg-muted/30 border-border text-foreground placeholder:text-foreground/20 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
                 required
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-black uppercase  text-foreground/40">Number B</label>
+            <div className="space-y-0.5 sm:space-y-1">
+              <label className="text-[8px] sm:text-[9px] font-black uppercase text-foreground/40">Number B</label>
               <Input
                 type="number"
                 step="any"
@@ -171,18 +168,18 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                 value={b}
                 onChange={(e) => setB(e.target.value)}
                 disabled={isLoading || !isSignedIn}
-                className="bg-muted/30 border-border text-foreground placeholder:text-foreground/20 focus-visible:ring-secondary h-8 text-base font-mono"
+                className="bg-muted/30 border-border text-foreground placeholder:text-foreground/20 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
                 required
               />
             </div>
           </div>
           
           {/* Actions row */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Button
               type="submit"
               disabled={isLoading || !a || !b || !isSignedIn}
-              className="flex-1 bg-secondary hover:bg-secondary/90 text-secondary-foreground font-black uppercase h-8 text-[9px] shadow-lg shadow-secondary/10 transition-all active:scale-[0.98] rounded-md"
+              className="flex-1 bg-secondary hover:bg-secondary/90 text-secondary-foreground font-black uppercase h-7 sm:h-8 text-[8px] sm:text-[9px] shadow-lg shadow-secondary/10 transition-all active:scale-[0.98] rounded-md"
             >
               {isLoading ? (
                 <>
@@ -199,31 +196,31 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
               )}
             </Button>
             {/* AI/Classic Toggle */}
-            <div className={`grid grid-cols-2 h-8 rounded-lg bg-muted p-0.5 gap-0.5 border border-border ${isLoading || !isSignedIn ? 'opacity-50' : ''}`}>
+            <div className={`grid grid-cols-2 h-7 sm:h-8 rounded-md sm:rounded-lg bg-muted p-0.5 gap-0.5 border border-border ${isLoading || !isSignedIn ? 'opacity-50' : ''}`}>
               <button
                 type="button"
                 onClick={() => setMode('classic')}
                 disabled={isLoading || !isSignedIn}
-                className={`flex items-center justify-center gap-1 px-2.5 rounded-md text-[9px] font-black uppercase  transition-all ${
+                className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${
                   mode === 'classic'
                     ? 'bg-foreground/10 text-foreground shadow-sm'
                     : 'text-foreground/30 hover:text-foreground/50'
                 }`}
               >
-                <Calculator className="h-3 w-3" />
+                <Calculator className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 <span className="hidden sm:inline">Classic</span>
               </button>
               <button
                 type="button"
                 onClick={() => setMode('ai')}
                 disabled={isLoading || !isSignedIn}
-                className={`flex items-center justify-center gap-1 px-2.5 rounded-md text-[9px] font-black uppercase  transition-all ${
+                className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${
                   mode === 'ai'
                     ? 'bg-secondary text-secondary-foreground shadow-sm'
                     : 'text-foreground/30 hover:text-foreground/50'
                 }`}
               >
-                <Sparkles className="h-3 w-3" />
+                <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 <span className="hidden sm:inline">AI</span>
               </button>
             </div>

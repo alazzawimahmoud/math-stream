@@ -120,24 +120,24 @@ function AppContent() {
 
   return (
     <div className="w-full lg:w-[80%] lg:min-w-[80%] mx-auto min-h-full lg:h-full flex flex-col flex-1">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4 flex-1 lg:min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 flex-1 lg:min-h-0">
         {/* Left Column: History (Full Height) */}
         <div className="lg:col-span-1 flex flex-col order-3 lg:order-1 lg:min-h-0 w-full flex-1 lg:flex-none">
           <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary flex flex-col flex-1 lg:h-full w-full relative">
-        <CardHeader className="bg-muted border-b border-border/50 shrink-0 h-[56px] py-1.5 px-3">
-          <div className="flex items-center h-full gap-1.5">
-            <History className="h-4 w-4 text-primary shrink-0" />
-            <div className="space-y-0.5">
-              <CardTitle className="text-foreground text-base font-black uppercase">
+        <CardHeader className="bg-muted border-b border-border/50 shrink-0 h-[44px] sm:h-[56px] py-1 sm:py-1.5 px-2 sm:px-3">
+          <div className="flex items-center h-full gap-1 sm:gap-1.5">
+            <History className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
+            <div className="space-y-0">
+              <CardTitle className="text-foreground text-sm sm:text-base font-black uppercase">
                 Past Computations
               </CardTitle>
-              <CardDescription className="text-foreground/60 font-bold text-[9px] uppercase">
-                {isSignedIn || isSessionLoading ? `${totalHistory} completed payloads` : 'Sign in to view your computation history'}
+              <CardDescription className="text-foreground/60 font-bold text-[8px] sm:text-[9px] uppercase">
+                {isSignedIn || isSessionLoading ? `${totalHistory} completed payloads` : 'Sign in to view history'}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className={`pt-3 flex-1 overflow-y-auto px-3 ${hasMoreHistory ? 'pb-16' : ''}`}>
+        <CardContent className={`pt-2 sm:pt-3 flex-1 overflow-y-auto px-2 sm:px-3 ${hasMoreHistory ? 'pb-14 sm:pb-16' : ''}`}>
           {isSessionLoading ? (
             <div className="flex flex-col items-center justify-center space-y-3 py-8">
               <Loader2 className="h-6 w-6 text-foreground/20 animate-spin" />
@@ -176,43 +176,31 @@ function AppContent() {
                   <button
                     key={computation._id}
                     onClick={() => setCurrentComputationId(computation._id)}
-                    className={`w-full p-2.5 sm:p-3 rounded-lg transition-all text-left group ${
+                    className={`w-full p-1.5 sm:p-3 rounded-md sm:rounded-lg transition-all text-left group ${
                       isSelected
                         ? 'bg-primary/5 border-l-2 border-l-primary'
                         : 'bg-muted/20 hover:bg-muted/30 border-l-2 border-l-transparent'
                     }`}
                   >
                     {/* Mobile Layout */}
-                    <div className="flex flex-col sm:hidden gap-1.5">
-                      <div className="flex items-start gap-2">
-                        {computation.mode === 'ai' ? (
-                          <Sparkles className={`h-3.5 w-3.5 transition-colors shrink-0 mt-0.5 ${
-                            isSelected ? 'text-accent' : 'text-foreground/40'
-                          }`} />
-                        ) : (
-                          <Calculator className={`h-3.5 w-3.5 transition-colors shrink-0 mt-0.5 ${
-                            isSelected ? 'text-primary' : 'text-foreground/40'
-                          }`} />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-xs text-foreground font-medium leading-tight">
-                              A = {computation.a}
-                            </span>
-                            <span className="text-xs text-foreground font-medium leading-tight">
-                              B = {computation.b}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-0.5 shrink-0">
-                          <span className="text-[10px] text-foreground/40 font-medium">
-                            {new Date(computation.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                          <span className="text-[9px] text-foreground/30 uppercase ">
-                            {computation.mode === 'ai' ? 'AI' : 'Classic'}
-                          </span>
-                        </div>
+                    <div className="flex sm:hidden items-center gap-1.5">
+                      {computation.mode === 'ai' ? (
+                        <Sparkles className={`h-3 w-3 transition-colors shrink-0 ${
+                          isSelected ? 'text-accent' : 'text-foreground/40'
+                        }`} />
+                      ) : (
+                        <Calculator className={`h-3 w-3 transition-colors shrink-0 ${
+                          isSelected ? 'text-primary' : 'text-foreground/40'
+                        }`} />
+                      )}
+                      <div className="flex-1 min-w-0 flex items-center gap-2">
+                        <span className="text-[10px] text-foreground font-medium truncate">
+                          A={computation.a}, B={computation.b}
+                        </span>
                       </div>
+                      <span className="text-[8px] text-foreground/30 shrink-0">
+                        {new Date(computation.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
 
                     {/* Desktop Layout */}
@@ -283,7 +271,7 @@ function AppContent() {
         </div>
 
         {/* Right Column: Computation Form + Results */}
-        <div className="lg:col-span-2 flex flex-col gap-3 order-1 lg:order-2 lg:min-h-0 w-full flex-1 lg:flex-none">
+        <div className="lg:col-span-2 flex flex-col gap-2 sm:gap-3 order-1 lg:order-2 lg:min-h-0 w-full flex-1 lg:flex-none">
           {/* Compute Form */}
           <div className="shrink-0 w-full">
             <ComputeForm 
@@ -328,12 +316,12 @@ export default function Page() {
   return (
     <TRPCProvider>
       <div className="min-h-screen lg:h-screen bg-background flex flex-col relative">
-        {/* Theme Toggle & Logout - desktop only (mobile shows in header) */}
-        <div className="hidden sm:flex fixed top-4 right-4 z-50 flex-col gap-2">
+        {/* Theme Toggle & Logout - large screens only (shows in header on medium and below) */}
+        <div className="hidden lg:flex fixed top-4 right-4 z-50 flex-col gap-2">
           <ThemeToggle />
           <LogoutButton />
         </div>
-        <main className="container mx-auto px-4 py-4 flex-1 flex flex-col lg:min-h-0">
+        <main className="container mx-auto px-2 py-2 sm:px-4 sm:py-4 flex-1 flex flex-col lg:min-h-0">
           <AppContent />
         </main>
       </div>
