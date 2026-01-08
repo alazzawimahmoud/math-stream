@@ -10,8 +10,9 @@ export function LogoutButton() {
 
   if (!isSignedIn) return null;
 
-  const handleSignOut = () => {
-    signOut({ callbackURL: '/' });
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.href = '/';
   };
 
   return (
