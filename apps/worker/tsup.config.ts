@@ -7,4 +7,11 @@ export default defineConfig({
   outDir: 'dist',
   clean: true,
   sourcemap: true,
+  // Bundle workspace packages since they export .ts files
+  noExternal: [
+    '@mathstream/queue',
+    '@mathstream/db',
+    '@mathstream/shared',
+    '@mathstream/cache',
+  ],
 });

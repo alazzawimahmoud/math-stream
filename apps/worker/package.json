@@ -15,7 +15,9 @@
     "@mathstream/queue": "workspace:*",
     "@mathstream/shared": "workspace:*",
     "ai": "^4.0.30",
-    "bullmq": "^5.34.3"
+    "bullmq": "^5.34.3",
+    "ioredis": "5.8.2",
+    "mongodb": "^6.12.0"
   },
   "devDependencies": {
     "@mathstream/typescript-config": "workspace:*",
