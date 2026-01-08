@@ -123,13 +123,13 @@ function AppContent() {
         <div className="lg:col-span-1 flex flex-col order-3 lg:order-1 lg:min-h-0 w-full">
           <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary flex flex-col lg:h-full w-full relative">
         <CardHeader className="bg-muted border-b border-border/50 shrink-0 h-[56px] py-1.5 px-3">
-          <div className="flex items-center h-full">
+          <div className="flex items-center h-full gap-1.5">
+            <History className="h-4 w-4 text-primary shrink-0" />
             <div className="space-y-0.5">
-              <CardTitle className="text-foreground flex items-center gap-1.5 text-base font-black uppercase">
-                <History className="h-4 w-4 text-primary" />
+              <CardTitle className="text-foreground text-base font-black uppercase">
                 Past Computations
               </CardTitle>
-              <CardDescription className="text-foreground/60 font-bold text-[9px] uppercase ">
+              <CardDescription className="text-foreground/60 font-bold text-[9px] uppercase">
                 {isSignedIn || isSessionLoading ? `${totalHistory} completed payloads` : 'Sign in to view your computation history'}
               </CardDescription>
             </div>

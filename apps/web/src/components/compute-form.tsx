@@ -8,8 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { trpc } from '@/trpc/client';
 import { useSession, signOut, signIn } from '@/lib/auth-client';
 import { Calculator, Sparkles, Loader2, LogOut } from 'lucide-react';
-import { CalculatorIcon } from '@/components/icons/calculator';
 import { GoogleIcon } from '@/components/icons/google';
+import Image from 'next/image';
 import type { ComputationMode } from '@mathstream/shared';
 
 interface ComputeFormProps {
@@ -38,7 +38,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
   };
 
   const handleSignIn = () => {
-    signIn.social({ provider: 'google', callbackURL: '/app' });
+    signIn.social({ provider: 'google', callbackURL: '/' });
   };
 
   // Clear inputs when computation completes
@@ -76,7 +76,14 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
           <div className="flex items-center justify-between w-full sm:w-auto sm:justify-start gap-4 sm:gap-6">
             {/* MathStream Branding */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <CalculatorIcon size="sm" />
+              <Image 
+                src="/logo.png" 
+                alt="MathStream" 
+                width={36}
+                height={36}
+                className="h-8 w-8 sm:h-9 sm:w-9"
+                priority
+              />
               <span className="text-sm sm:text-lg font-bold text-primary">
                 MathStream
               </span>
