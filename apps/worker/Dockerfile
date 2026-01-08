@@ -6,14 +6,12 @@ WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @mathstream/worker build
+RUN pnpm --filter @mathstream/worker deploy --prod /app/deploy
 
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/worker/dist ./apps/worker/dist
-COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/deploy ./
 
-CMD ["node", "apps/worker/dist/index.js"]
-
+CMD ["node", "dist/index.js"]
