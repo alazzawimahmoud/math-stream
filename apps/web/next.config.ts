@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
     "@mathstream/queue",
     "@mathstream/cache",
   ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

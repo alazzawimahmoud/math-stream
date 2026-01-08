@@ -45,14 +45,26 @@ export async function getComputation(id: string): Promise<Computation | null> {
   return { ...doc, _id: doc._id.toString() } as Computation;
 }
 
-export async function getComputationsByUser(userId: string): Promise<Computation[]> {
+export async function getComputationsByUser(
+  userId: string,
+  limit: number = 20,
+  skip: number = 0
+): Promise<{ computations: Computation[]; hasMore: boolean; total: number }> {
   const db = getDb();
-  const docs = await db.collection(COLLECTION)
-    .find({ userId })
-    .sort({ createdAt: -1 })
-    .limit(10)
-    .toArray();
-  return docs.map(doc => ({ ...doc, _id: doc._id.toString() })) as Computation[];
+  const [docs, total] = await Promise.all([
+    db.collection(COLLECTION)
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit + 1) // Fetch one extra to check if there are more
+      .toArray(),
+    db.collection(COLLECTION).countDocuments({ userId })
+  ]);
+  
+  const hasMore = docs.length > limit;
+  const computations = docs.slice(0, limit).map(doc => ({ ...doc, _id: doc._id.toString() })) as Computation[];
+  
+  return { computations, hasMore, total };
 }
 
 export async function updateResultProgress(

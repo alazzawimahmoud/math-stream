@@ -62,9 +62,15 @@ export const computationRouter = router({
     }),
 
   getHistory: protectedProcedure
-    .query(async ({ ctx }) => {
+    .input(z.object({ 
+      limit: z.number().min(1).max(100).default(20),
+      skip: z.number().min(0).default(0)
+    }).optional())
+    .query(async ({ ctx, input }) => {
       await ensureDbConnection();
       const userId = ctx.session.user.id;
-      return getComputationsByUser(userId);
+      const limit = input?.limit ?? 20;
+      const skip = input?.skip ?? 0;
+      return getComputationsByUser(userId, limit, skip);
     }),
 });

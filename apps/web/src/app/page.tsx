@@ -1,139 +1,335 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
+import { ComputeForm } from '@/components/compute-form';
+import { ResultsTable } from '@/components/results-table';
+import { trpc } from '@/trpc/client';
+import { TRPCProvider } from '@/trpc/provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { History, Loader2, Calculator, Sparkles } from 'lucide-react';
+import { CalculatorIcon } from '@/components/icons/calculator';
+import { GoogleIcon } from '@/components/icons/google';
 import { useSession, signIn } from '@/lib/auth-client';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Calculator, Sparkles, Zap, Shield } from 'lucide-react';
+import type { Computation } from '@mathstream/shared';
 
-export default function LandingPage() {
-  const { data: session, isPending } = useSession();
-  const router = useRouter();
+function AppContent() {
+  const [currentComputationId, setCurrentComputationId] = useState<string | null>(null);
+  const [activeComputationId, setActiveComputationId] = useState<string | null>(null);
+  const { data: session, isPending: isSessionLoading } = useSession();
+  const isSignedIn = !!session?.user;
 
+  // Clear computation and history when user signs out
   useEffect(() => {
-    if (session) {
-      router.push('/app');
+    if (!isSignedIn) {
+      setCurrentComputationId(null);
+      setActiveComputationId(null);
+      setHistoryItems([]);
+      setHistorySkip(0);
+      setHasMoreHistory(false);
+      setTotalHistory(0);
     }
-  }, [session, router]);
+  }, [isSignedIn]);
 
-  const handleGoogleSignIn = () => {
-    signIn.social({ provider: 'google', callbackURL: '/app' });
+  // Fetch current computation with polling
+  const { data: currentComputation, isLoading: isLoadingCurrent } = trpc.computation.getStatus.useQuery(
+    { id: currentComputationId! },
+    {
+      enabled: !!currentComputationId && isSignedIn,
+      refetchInterval: (query) => {
+        // Stop polling when computation is complete or from cache
+        const data = query.state.data;
+        if (data?.status === 'completed' || data?.fromCache) {
+          return false;
+        }
+        return 500; // Poll every 500ms
+      },
+    }
+  );
+
+  // Clear active computation when it completes
+  useEffect(() => {
+    if (activeComputationId && currentComputation && 
+        currentComputation._id === activeComputationId &&
+        (currentComputation.status === 'completed' || currentComputation.status === 'failed')) {
+      setActiveComputationId(null);
+    }
+  }, [activeComputationId, currentComputation]);
+
+  // Pagination state for history
+  const [historyItems, setHistoryItems] = useState<Computation[]>([]);
+  const [historySkip, setHistorySkip] = useState(0);
+  const [hasMoreHistory, setHasMoreHistory] = useState(false);
+  const [totalHistory, setTotalHistory] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const HISTORY_LIMIT = 20;
+
+  // Fetch history (only when signed in)
+  const { data: historyData, isLoading: isLoadingHistory, refetch: refetchHistory } = trpc.computation.getHistory.useQuery(
+    { limit: HISTORY_LIMIT, skip: 0 },
+    {
+      enabled: isSignedIn,
+      refetchInterval: isSignedIn ? 10000 : false, // Refresh history every 10 seconds when signed in
+    }
+  );
+
+  // Update local state when initial history data changes
+  useEffect(() => {
+    if (historyData) {
+      setHistoryItems(historyData.computations);
+      setHasMoreHistory(historyData.hasMore);
+      setTotalHistory(historyData.total);
+      setHistorySkip(historyData.computations.length);
+    }
+  }, [historyData]);
+
+  // Load more history items
+  const loadMoreMutation = trpc.computation.getHistory.useQuery(
+    { limit: HISTORY_LIMIT, skip: historySkip },
+    { enabled: false }
+  );
+
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    const result = await loadMoreMutation.refetch();
+    if (result.data) {
+      setHistoryItems(prev => [...prev, ...result.data.computations]);
+      setHasMoreHistory(result.data.hasMore);
+      setHistorySkip(prev => prev + result.data.computations.length);
+    }
+    setIsLoadingMore(false);
   };
 
-  if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-primary text-xl font-black uppercase tracking-[0.2em]">Loading...</div>
-      </div>
-    );
-  }
+  const handleSignIn = () => {
+    signIn.social({ provider: 'google', callbackURL: '/' });
+  };
+
+  const handleComputationCreated = (id: string) => {
+    setCurrentComputationId(id);
+    setActiveComputationId(id); // Track this as an active computation
+  };
+
+  // Only show processing for actively running computations (not history views)
+  const isProcessing = !!activeComputationId && (
+    !currentComputation || 
+    currentComputation._id !== activeComputationId ||
+    (currentComputation.status !== 'completed' && currentComputation.status !== 'failed')
+  );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-24 sm:py-32">
-        <div className="text-center mb-20">
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="p-4 bg-secondary rounded-[2rem] shadow-xl shadow-secondary/20 rotate-3 hover:rotate-0 transition-transform duration-500">
-              <Calculator className="h-12 w-12 text-secondary-foreground" />
-            </div>
-            <h1 className="text-6xl font-black text-foreground tracking-tighter">
-              Math<span className="text-secondary">Stream</span>
-            </h1>
-          </div>
-          <p className="text-xl text-foreground/80 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
-            A high-performance, queue-based computation engine. Watch your complex mathematical operations 
-            process in real-time with our advanced worker system.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button 
-              onClick={handleGoogleSignIn}
-              size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-10 py-7 text-lg rounded-2xl shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest"
-            >
-              <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
-                <path
-                  fill="currentColor"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-              Sign in with Google
-            </Button>
-            <div className="flex items-center gap-2 text-foreground/40 text-[10px] font-black uppercase tracking-[0.3em] px-4">
-              <span className="w-8 h-[1px] bg-border"></span>
-              Secure Auth
-              <span className="w-8 h-[1px] bg-border"></span>
+    <div className="w-full lg:w-[80%] lg:min-w-[80%] mx-auto lg:h-full flex flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4 lg:flex-1 lg:min-h-0">
+        {/* Left Column: History (Full Height) */}
+        <div className="lg:col-span-1 flex flex-col order-3 lg:order-1 lg:min-h-0 w-full">
+          <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary flex flex-col lg:h-full w-full relative">
+        <CardHeader className="bg-muted border-b border-border/50 shrink-0 h-[56px] py-1.5 px-3">
+          <div className="flex items-center h-full">
+            <div className="space-y-0.5">
+              <CardTitle className="text-foreground flex items-center gap-1.5 text-base font-black uppercase">
+                <History className="h-4 w-4 text-primary" />
+                Past Computations
+              </CardTitle>
+              <CardDescription className="text-foreground/60 font-bold text-[9px] uppercase ">
+                {isSignedIn || isSessionLoading ? `${totalHistory} completed payloads` : 'Sign in to view your computation history'}
+              </CardDescription>
             </div>
           </div>
+        </CardHeader>
+        <CardContent className={`pt-3 lg:flex-1 lg:overflow-y-auto px-3 ${hasMoreHistory ? 'pb-16' : ''}`}>
+          {isSessionLoading ? (
+            <div className="flex flex-col items-center justify-center space-y-3 py-8">
+              <Loader2 className="h-6 w-6 text-foreground/20 animate-spin" />
+              <span className="text-[9px] font-black uppercase text-foreground/40">Loading...</span>
+            </div>
+          ) : !isSignedIn ? (
+            <div className="flex flex-col items-center justify-center py-8 space-y-4">
+              <CalculatorIcon size="lg" />
+              <div className="text-center space-y-1.5">
+                <p className="text-foreground/60 font-bold text-xs uppercase ">
+                  Sign in to view your computation history
+                </p>
+                <p className="text-foreground/40 text-[9px] font-black uppercase ">
+                  Your completed computations will appear here
+                </p>
+              </div>
+              <Button
+                onClick={handleSignIn}
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[10px] px-6 py-2"
+              >
+                <GoogleIcon className="h-3.5 w-3.5 mr-1.5" />
+                Sign In
+              </Button>
+            </div>
+          ) : isLoadingHistory ? (
+            <div className="flex flex-col items-center justify-center space-y-3 py-8">
+              <Loader2 className="h-6 w-6 text-foreground/20 animate-spin" />
+              <span className="text-[9px] font-black uppercase text-foreground/40">Loading...</span>
+            </div>
+          ) : historyItems && historyItems.length > 0 ? (
+            <div className="grid grid-cols-1 gap-0.5">
+              {historyItems.map((computation) => {
+                  const isSelected = computation._id === currentComputationId;
+                  return (
+                  <button
+                    key={computation._id}
+                    onClick={() => setCurrentComputationId(computation._id)}
+                    className={`w-full p-2.5 sm:p-3 rounded-lg transition-all text-left group ${
+                      isSelected
+                        ? 'bg-primary/5 border-l-2 border-l-primary'
+                        : 'bg-muted/20 hover:bg-muted/30 border-l-2 border-l-transparent'
+                    }`}
+                  >
+                    {/* Mobile Layout */}
+                    <div className="flex flex-col sm:hidden gap-1.5">
+                      <div className="flex items-start gap-2">
+                        {computation.mode === 'ai' ? (
+                          <Sparkles className={`h-3.5 w-3.5 transition-colors shrink-0 mt-0.5 ${
+                            isSelected ? 'text-accent' : 'text-foreground/40'
+                          }`} />
+                        ) : (
+                          <Calculator className={`h-3.5 w-3.5 transition-colors shrink-0 mt-0.5 ${
+                            isSelected ? 'text-primary' : 'text-foreground/40'
+                          }`} />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs text-foreground font-medium leading-tight">
+                              A = {computation.a}
+                            </span>
+                            <span className="text-xs text-foreground font-medium leading-tight">
+                              B = {computation.b}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-0.5 shrink-0">
+                          <span className="text-[10px] text-foreground/40 font-medium">
+                            {new Date(computation.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <span className="text-[9px] text-foreground/30 uppercase ">
+                            {computation.mode === 'ai' ? 'AI' : 'Classic'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden sm:flex items-center gap-3">
+                      {computation.mode === 'ai' ? (
+                        <Sparkles className={`h-3.5 w-3.5 transition-colors shrink-0 ${
+                          isSelected ? 'text-accent' : 'text-foreground/40'
+                        }`} />
+                      ) : (
+                        <Calculator className={`h-3.5 w-3.5 transition-colors shrink-0 ${
+                          isSelected ? 'text-primary' : 'text-foreground/40'
+                        }`} />
+                      )}
+                      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                        <span className="text-xs text-foreground font-medium leading-tight truncate">
+                          A = {computation.a}
+                        </span>
+                        <span className="text-xs text-foreground font-medium leading-tight truncate">
+                          B = {computation.b}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-end gap-0.5 shrink-0">
+                        <span className="text-[10px] text-foreground/40 font-medium">
+                          {new Date(computation.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <span className="text-[9px] text-foreground/30 uppercase ">
+                          {computation.mode === 'ai' ? 'AI' : 'Classic'}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                  );
+                })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 space-y-3">
+              <CalculatorIcon size="lg" />
+              <p className="text-foreground/40 text-[9px] font-black uppercase  text-center">
+                No computations yet.
+              </p>
+            </div>
+          )}
+        </CardContent>
+        {/* Floating Load More Button */}
+        {hasMoreHistory && (
+          <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+            <div className="bg-gradient-to-t from-card via-card/95 to-transparent h-16 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 p-3 pointer-events-auto">
+              <Button
+                variant="secondary"
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="w-full text-[10px] font-black uppercase bg-card hover:bg-muted text-foreground/70 hover:text-foreground border border-border shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 transition-all duration-200"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load More'
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <Card className="bg-card/50 border-border/50 hover:border-secondary/20 transition-colors group shadow-sm hover:shadow-xl hover:shadow-secondary/5 rounded-[2rem] overflow-hidden">
-            <CardHeader className="p-8">
-              <div className="p-4 bg-muted rounded-2xl w-fit mb-6 group-hover:bg-secondary/10 transition-colors">
-                <Zap className="h-8 w-8 text-secondary" />
-              </div>
-              <CardTitle className="text-foreground text-xl font-black uppercase tracking-wider mb-2">Queue Processing</CardTitle>
-              <CardDescription className="text-foreground/60 font-medium leading-relaxed">
-                Jobs run in parallel with real-time progress updates. Watch all four operations 
-                process simultaneously with zero lag.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        {/* Right Column: Computation Form + Results */}
+        <div className="lg:col-span-2 flex flex-col gap-3 order-1 lg:order-2 lg:min-h-0 w-full">
+          {/* Compute Form */}
+          <div className="shrink-0 w-full">
+            <ComputeForm 
+              onComputationCreated={handleComputationCreated} 
+              isProcessing={isProcessing}
+            />
+          </div>
 
-          <Card className="bg-card/50 border-border/50 hover:border-accent/20 transition-colors group shadow-sm hover:shadow-xl hover:shadow-accent/5 rounded-[2rem] overflow-hidden">
-            <CardHeader className="p-8">
-              <div className="p-4 bg-muted rounded-2xl w-fit mb-6 group-hover:bg-accent/10 transition-colors">
-                <Sparkles className="h-8 w-8 text-accent" />
-              </div>
-              <CardTitle className="text-foreground text-xl font-black uppercase tracking-wider mb-2">AI-Powered Math</CardTitle>
-              <CardDescription className="text-foreground/60 font-medium leading-relaxed">
-                Choose between traditional mathematical calculations or advanced AI-powered 
-                computations using Google Gemini models.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="bg-card/50 border-border/50 hover:border-destructive/20 transition-colors group shadow-sm hover:shadow-xl hover:shadow-destructive/5 rounded-[2rem] overflow-hidden">
-            <CardHeader className="p-8">
-              <div className="p-4 bg-muted rounded-2xl w-fit mb-6 group-hover:bg-destructive/10 transition-colors">
-                <Shield className="h-8 w-8 text-destructive" />
-              </div>
-              <CardTitle className="text-foreground text-xl font-black uppercase tracking-wider mb-2">Smart Caching</CardTitle>
-              <CardDescription className="text-foreground/60 font-medium leading-relaxed">
-                Completed computations are cached in high-speed Redis for instant retrieval 
-                on subsequent identical requests.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-
-        {/* Tech Stack */}
-        <div className="mt-32 text-center">
-          <p className="text-foreground/30 text-[10px] font-black mb-8 uppercase tracking-[0.4em]">Engineered with</p>
-          <div className="flex flex-wrap justify-center gap-4 text-foreground/60">
-            {['Next.js 14', 'tRPC', 'BullMQ', 'MongoDB', 'Redis', 'Gemini AI'].map(tech => (
-              <span key={tech} className="px-5 py-2 bg-muted border border-border/50 rounded-xl font-bold text-xs uppercase tracking-widest hover:border-primary/30 transition-colors">
-                {tech}
-              </span>
-            ))}
+          {/* Computation Results */}
+          <div className="lg:flex-1 lg:min-h-0 flex flex-col w-full">
+            {currentComputationId ? (
+              <>
+                {isLoadingCurrent && !currentComputation ? (
+                  <Card key="loading" className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary/30 lg:flex-1 w-full animate-fade-in">
+                    <CardContent className="flex flex-col items-center justify-center space-y-3 py-12 lg:h-full">
+                      <Loader2 className="h-12 w-12 text-foreground/20 animate-spin" />
+                      <span className="text-[9px] font-black uppercase  text-foreground/40">Loading Computation...</span>
+                    </CardContent>
+                  </Card>
+                ) : currentComputation ? (
+                  <div key={currentComputation._id} className="lg:flex-1 lg:min-h-0 w-full animate-fade-in">
+                    <ResultsTable computation={currentComputation} />
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <Card key="empty" className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary/30 lg:flex-1 w-full animate-fade-in">
+                <CardContent className="flex flex-col items-center justify-center space-y-3 py-12 lg:h-full">
+                  <CalculatorIcon size="lg" />
+                  <span className="text-[9px] font-black uppercase  text-foreground/40">Select a computation from history or run a new one</span>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <TRPCProvider>
+      <div className="min-h-screen lg:h-screen bg-background flex flex-col">
+        <main className="container mx-auto px-4 py-4 flex-1 lg:flex lg:flex-col lg:min-h-0">
+          <AppContent />
+        </main>
+      </div>
+    </TRPCProvider>
   );
 }

@@ -1,6 +1,7 @@
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import type { OperationType } from '@mathstream/shared';
+import { roundIfDecimal } from './classic';
 
 const operationNames: Record<OperationType, string> = {
   add: 'addition',
@@ -37,7 +38,7 @@ If the result is a decimal, round to 6 decimal places.`;
       return { result: null, error: `AI returned invalid result: ${trimmed}` };
     }
 
-    return { result, error: null };
+    return { result: roundIfDecimal(result), error: null };
   } catch (error) {
     return { 
       result: null, 
