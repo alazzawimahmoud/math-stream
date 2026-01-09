@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -15,38 +15,30 @@ import Image from 'next/image';
 import type { ComputationMode } from '@mathstream/shared';
 
 interface ComputeFormProps {
-  onComputationCreated: (id: string) => void;
-  isProcessing?: boolean;
+  onComputationCreated: (computation: import('@mathstream/shared').Computation) => void;
 }
 
-export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormProps) {
+export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
   const [a, setA] = useState<string>('');
   const [b, setB] = useState<string>('');
   const [mode, setMode] = useState<ComputationMode>('classic');
-  const prevIsProcessing = useRef(isProcessing);
   const { data: session, isPending: isSessionLoading } = useSession();
 
   const createMutation = trpc.computation.create.useMutation({
     onSuccess: (data) => {
-      onComputationCreated(data.id);
+      onComputationCreated(data);
+      // Clear inputs after successful submission
+      setA('');
+      setB('');
     },
   });
 
-  const isLoading = createMutation.isPending || isProcessing;
+  const isSubmitting = createMutation.isPending;
   const isSignedIn = !!session?.user;
 
   const handleSignIn = () => {
     signIn.social({ provider: 'google', callbackURL: '/' });
   };
-
-  // Clear inputs when computation completes
-  useEffect(() => {
-    if (prevIsProcessing.current && !isProcessing) {
-      setA('');
-      setB('');
-    }
-    prevIsProcessing.current = isProcessing;
-  }, [isProcessing]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,7 +147,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                 placeholder="0.00"
                 value={a}
                 onChange={(e) => setA(e.target.value)}
-                disabled={isLoading || !isSignedIn}
+                disabled={isSubmitting || !isSignedIn}
                 className="bg-muted border-border text-foreground placeholder:text-foreground/50 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
                 required
               />
@@ -168,7 +160,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                 placeholder="0.00"
                 value={b}
                 onChange={(e) => setB(e.target.value)}
-                disabled={isLoading || !isSignedIn}
+                disabled={isSubmitting || !isSignedIn}
                 className="bg-muted border-border text-foreground placeholder:text-foreground/50 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
                 required
               />
@@ -179,13 +171,13 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Button
               type="submit"
-              disabled={isLoading || !a || !b || !isSignedIn}
+              disabled={isSubmitting || !a || !b || !isSignedIn}
               className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-black uppercase h-7 sm:h-8 text-[8px] sm:text-[9px] shadow-lg shadow-foreground/20 transition-all active:scale-[0.98] rounded-md"
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  Processing
+                  Submitting...
                 </>
               ) : !isSignedIn ? (
                 <>
@@ -193,15 +185,15 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                   Sign In
                 </>
               ) : (
-                'Run'
+                'Submit'
               )}
             </Button>
             {/* AI/Classic Toggle */}
-            <div className={`grid grid-cols-2 h-7 sm:h-8 rounded-md sm:rounded-lg bg-muted p-0.5 gap-0.5 border border-border ${isLoading || !isSignedIn ? 'opacity-50' : ''}`}>
+            <div className={`grid grid-cols-2 h-7 sm:h-8 rounded-md sm:rounded-lg bg-muted p-0.5 gap-0.5 border border-border ${isSubmitting || !isSignedIn ? 'opacity-50' : ''}`}>
               <button
                 type="button"
                 onClick={() => setMode('classic')}
-                disabled={isLoading || !isSignedIn}
+                disabled={isSubmitting || !isSignedIn}
                 className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${
                   mode === 'classic'
                     ? 'bg-foreground text-background shadow-sm'
@@ -214,7 +206,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
               <button
                 type="button"
                 onClick={() => setMode('ai')}
-                disabled={isLoading || !isSignedIn}
+                disabled={isSubmitting || !isSignedIn}
                 className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${
                   mode === 'ai'
                     ? 'bg-foreground text-background shadow-sm'

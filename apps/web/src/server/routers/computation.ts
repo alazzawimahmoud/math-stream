@@ -25,7 +25,12 @@ export const computationRouter = router({
       const computationId = await createComputation(userId, a, b, mode);
       await addComputationJobs(computationId, a, b, mode);
       
-      return { id: computationId };
+      // Return full computation for optimistic UI updates
+      const computation = await getComputation(computationId);
+      if (!computation) {
+        throw new Error('Failed to create computation');
+      }
+      return computation;
     }),
 
   getStatus: protectedProcedure

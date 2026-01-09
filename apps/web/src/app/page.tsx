@@ -17,7 +17,7 @@ import type { Computation } from '@mathstream/shared';
 
 function AppContent() {
   const [currentComputationId, setCurrentComputationId] = useState<string | null>(null);
-  const [activeComputationId, setActiveComputationId] = useState<string | null>(null);
+  const [activeComputationIds, setActiveComputationIds] = useState<Set<string>>(new Set());
   const { data: session, isPending: isSessionLoading } = useSession();
   const isSignedIn = !!session?.user;
 
@@ -25,7 +25,7 @@ function AppContent() {
   useEffect(() => {
     if (!isSignedIn) {
       setCurrentComputationId(null);
-      setActiveComputationId(null);
+      setActiveComputationIds(new Set());
       setHistoryItems([]);
       setHistorySkip(0);
       setHasMoreHistory(false);
@@ -49,14 +49,27 @@ function AppContent() {
     }
   );
 
-  // Clear active computation when it completes
+  // Update history items when current computation updates (for live status in list)
   useEffect(() => {
-    if (activeComputationId && currentComputation && 
-        currentComputation._id === activeComputationId &&
-        (currentComputation.status === 'completed' || currentComputation.status === 'failed')) {
-      setActiveComputationId(null);
+    if (currentComputation && activeComputationIds.has(currentComputation._id)) {
+      setHistoryItems(prev => 
+        prev.map(item => 
+          item._id === currentComputation._id 
+            ? { ...item, status: currentComputation.status }
+            : item
+        )
+      );
+      
+      // Remove from active set when completed
+      if (currentComputation.status === 'completed' || currentComputation.status === 'failed') {
+        setActiveComputationIds(prev => {
+          const next = new Set(prev);
+          next.delete(currentComputation._id);
+          return next;
+        });
+      }
     }
-  }, [activeComputationId, currentComputation]);
+  }, [currentComputation, activeComputationIds]);
 
   // Pagination state for history
   const [historyItems, setHistoryItems] = useState<Computation[]>([]);
@@ -75,15 +88,26 @@ function AppContent() {
     }
   );
 
-  // Update local state when initial history data changes
+  // Update local state when history data changes, merging with optimistic updates
   useEffect(() => {
     if (historyData) {
-      setHistoryItems(historyData.computations);
+      setHistoryItems(prev => {
+        // Get IDs of items from server
+        const serverIds = new Set(historyData.computations.map(c => c._id));
+        
+        // Keep any optimistic items that aren't in server data yet
+        const optimisticItems = prev.filter(
+          item => !serverIds.has(item._id) && activeComputationIds.has(item._id)
+        );
+        
+        // Merge: optimistic items first, then server data
+        return [...optimisticItems, ...historyData.computations];
+      });
       setHasMoreHistory(historyData.hasMore);
-      setTotalHistory(historyData.total);
+      setTotalHistory(prev => Math.max(prev, historyData.total));
       setHistorySkip(historyData.computations.length);
     }
-  }, [historyData]);
+  }, [historyData, activeComputationIds]);
 
   // Load more history items
   const loadMoreMutation = trpc.computation.getHistory.useQuery(
@@ -106,17 +130,17 @@ function AppContent() {
     signIn.social({ provider: 'google', callbackURL: '/' });
   };
 
-  const handleComputationCreated = (id: string) => {
-    setCurrentComputationId(id);
-    setActiveComputationId(id); // Track this as an active computation
+  const handleComputationCreated = (computation: Computation) => {
+    // Add to list immediately (optimistic update)
+    setHistoryItems(prev => [computation, ...prev]);
+    setTotalHistory(prev => prev + 1);
+    
+    // Select the new computation to show in Computation Engine
+    setCurrentComputationId(computation._id);
+    
+    // Track as active for polling
+    setActiveComputationIds(prev => new Set(prev).add(computation._id));
   };
-
-  // Only show processing for actively running computations (not history views)
-  const isProcessing = !!activeComputationId && (
-    !currentComputation || 
-    currentComputation._id !== activeComputationId ||
-    (currentComputation.status !== 'completed' && currentComputation.status !== 'failed')
-  );
 
   return (
     <div className="w-full lg:w-[80%] lg:min-w-[80%] mx-auto min-h-full lg:h-full flex flex-col flex-1">
@@ -129,10 +153,10 @@ function AppContent() {
             <History className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
             <div className="space-y-0">
               <CardTitle className="text-foreground text-sm sm:text-base font-black uppercase">
-                Past Computations
+                Computations
               </CardTitle>
               <CardDescription className="text-foreground/60 font-bold text-[8px] sm:text-[9px] uppercase">
-                {isSignedIn || isSessionLoading ? `${totalHistory} completed payloads` : 'Sign in to view history'}
+                {isSignedIn || isSessionLoading ? `${totalHistory} payloads` : 'Sign in to view computations'}
               </CardDescription>
             </div>
           </div>
@@ -172,6 +196,7 @@ function AppContent() {
             <div className="grid grid-cols-1 gap-0.5">
               {historyItems.map((computation) => {
                   const isSelected = computation._id === currentComputationId;
+                  const isActive = computation.status === 'pending' || computation.status === 'processing';
                   return (
                   <button
                     key={computation._id}
@@ -184,7 +209,9 @@ function AppContent() {
                   >
                     {/* Mobile Layout */}
                     <div className="flex sm:hidden items-center gap-1.5">
-                      {computation.mode === 'ai' ? (
+                      {isActive ? (
+                        <Loader2 className="h-3 w-3 text-foreground animate-spin shrink-0" />
+                      ) : computation.mode === 'ai' ? (
                         <Sparkles className={`h-3 w-3 transition-colors shrink-0 ${
                           isSelected ? 'text-foreground' : 'text-foreground/40'
                         }`} />
@@ -205,7 +232,9 @@ function AppContent() {
 
                     {/* Desktop Layout */}
                     <div className="hidden sm:flex items-center gap-3">
-                      {computation.mode === 'ai' ? (
+                      {isActive ? (
+                        <Loader2 className="h-3.5 w-3.5 text-foreground animate-spin shrink-0" />
+                      ) : computation.mode === 'ai' ? (
                         <Sparkles className={`h-3.5 w-3.5 transition-colors shrink-0 ${
                           isSelected ? 'text-foreground' : 'text-foreground/40'
                         }`} />
@@ -227,7 +256,7 @@ function AppContent() {
                           {new Date(computation.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                         <span className="text-[9px] text-foreground/30 uppercase ">
-                          {computation.mode === 'ai' ? 'AI' : 'Classic'}
+                          {isActive ? 'Processing' : computation.mode === 'ai' ? 'AI' : 'Classic'}
                         </span>
                       </div>
                     </div>
@@ -274,10 +303,7 @@ function AppContent() {
         <div className="lg:col-span-2 flex flex-col gap-2 sm:gap-3 order-1 lg:order-2 lg:min-h-0 w-full flex-1 lg:flex-none">
           {/* Compute Form */}
           <div className="shrink-0 w-full">
-            <ComputeForm 
-              onComputationCreated={handleComputationCreated} 
-              isProcessing={isProcessing}
-            />
+            <ComputeForm onComputationCreated={handleComputationCreated} />
           </div>
 
           {/* Computation Results */}
@@ -301,7 +327,7 @@ function AppContent() {
               <Card key="empty" className="bg-card border-0 shadow-xl shadow-black/15 overflow-hidden flex-1 w-full animate-fade-in">
                 <CardContent className="flex flex-col items-center justify-center space-y-3 py-12 h-full">
                   <CalculatorIcon size="lg" />
-                  <span className="text-[9px] font-black uppercase  text-foreground/40">Select a computation from history or run a new one</span>
+                  <span className="text-[9px] font-black uppercase  text-foreground/40">Select a computation or submit a new one</span>
                 </CardContent>
               </Card>
             )}
