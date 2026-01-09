@@ -21,20 +21,20 @@ const operationLabels: Record<string, string> = {
 const statusConfig = {
   pending: {
     icon: Clock,
-    color: 'text-foreground/40',
+    color: 'text-foreground/60',
     bgColor: 'bg-muted hover:bg-muted',
     label: 'Pending',
   },
   processing: {
     icon: Loader2,
-    color: 'text-accent',
-    bgColor: 'bg-accent/10 hover:bg-accent/10',
+    color: 'text-foreground',
+    bgColor: 'bg-foreground/10 hover:bg-foreground/10',
     label: 'Processing',
   },
   completed: {
     icon: CheckCircle2,
-    color: 'text-secondary',
-    bgColor: 'bg-secondary/10 hover:bg-secondary/10',
+    color: 'text-foreground',
+    bgColor: 'bg-foreground/10 hover:bg-foreground/10',
     label: 'Completed',
   },
   failed: {
@@ -47,7 +47,7 @@ const statusConfig = {
 
 export function ResultsTable({ computation }: ResultsTableProps) {
   return (
-    <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary h-full flex flex-col w-full">
+    <Card className="bg-card border-0 shadow-xl shadow-black/15 overflow-hidden h-full flex flex-col w-full">
       <CardHeader className="bg-muted border-b border-border/50 h-[50px] sm:h-[70px] py-1.5 sm:py-2 px-2 sm:px-4">
         <div className="flex items-center justify-between w-full h-full">
           <div className="space-y-0">
@@ -66,8 +66,8 @@ export function ResultsTable({ computation }: ResultsTableProps) {
               </div>
             </div>
             <div className="text-[8px] sm:text-[9px] text-foreground/40 font-black uppercase flex items-center gap-1.5 sm:gap-2">
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-secondary"></span> A: {computation.a}</span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-accent"></span> B: {computation.b}</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-secondary-foreground"></span> A: {computation.a}</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-accent-foreground"></span> B: {computation.b}</span>
             </div>
           </div>
           {/* Badges with labels for desktop */}
@@ -89,11 +89,10 @@ export function ResultsTable({ computation }: ResultsTableProps) {
       </CardHeader>
       <CardContent className="pt-2 sm:pt-6 px-2 sm:px-6 flex-1 overflow-auto">
         {/* Total Progress */}
-        <div className="mb-2 sm:mb-6 p-2 sm:p-4 bg-muted/50 rounded-lg sm:rounded-xl border border-border/50 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-0.5 sm:w-1 h-full bg-secondary"></div>
+        <div className="mb-2 sm:mb-6 p-2 sm:p-4 bg-muted/50 rounded-lg sm:rounded-xl border border-border/50 overflow-hidden">
           <div className="flex items-center justify-between mb-1 sm:mb-2">
             <span className="text-[8px] sm:text-[9px] font-black uppercase text-foreground/40">Total Execution Payload</span>
-            <span className="text-xs sm:text-sm font-black text-secondary font-mono">{computation.totalProgress}%</span>
+            <span className="text-xs sm:text-sm font-black text-foreground font-mono">{computation.totalProgress}%</span>
           </div>
           <Progress 
             value={computation.totalProgress} 
@@ -124,7 +123,7 @@ export function ResultsTable({ computation }: ResultsTableProps) {
                   {/* Result Value */}
                   <div className="flex items-center gap-1 min-w-0">
                     {result.status === 'completed' && result.result !== null ? (
-                      <span className="text-secondary font-mono font-black text-sm tabular-nums truncate" title={String(result.result)}>
+                      <span className="text-secondary-foreground font-mono font-black text-sm tabular-nums truncate selection:bg-secondary selection:text-secondary-foreground" title={String(result.result)}>
                         {result.result}
                       </span>
                     ) : result.status === 'failed' && result.error ? (
@@ -172,10 +171,7 @@ export function ResultsTable({ computation }: ResultsTableProps) {
                 return (
                   <TableRow key={result.operation} className="border-border/50 hover:bg-card transition-all group">
                     <TableCell className="text-foreground font-black uppercase text-xs py-3.5 px-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1 h-4 bg-border group-hover:bg-secondary transition-colors rounded-full"></div>
-                        {operationLabels[result.operation]}
-                      </div>
+                      {operationLabels[result.operation]}
                     </TableCell>
                     <TableCell className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
@@ -192,8 +188,8 @@ export function ResultsTable({ computation }: ResultsTableProps) {
                       <div className="min-h-[24px] flex items-center transition-opacity duration-300">
                         {result.status === 'completed' && result.result !== null ? (
                           <div className="flex items-center gap-2 min-w-0 animate-fade-in">
-                            <span className="text-secondary tabular-nums truncate" title={String(result.result)}>{result.result}</span>
-                            <CheckCircle2 className="h-4 w-4 text-secondary/30 shrink-0" />
+                            <span className="text-secondary-foreground tabular-nums truncate selection:bg-secondary selection:text-secondary-foreground" title={String(result.result)}>{result.result}</span>
+                            <CheckCircle2 className="h-4 w-4 text-secondary-foreground/30 shrink-0" />
                           </div>
                         ) : result.status === 'failed' && result.error ? (
                           <span className="text-destructive text-[10px] font-black uppercase leading-none bg-destructive/5 px-2 py-1 rounded border border-destructive/10 truncate block animate-fade-in" title={result.error}>{result.error}</span>

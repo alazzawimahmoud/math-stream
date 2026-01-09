@@ -67,7 +67,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
   };
 
   return (
-    <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary w-full">
+    <Card className="bg-card border-0 shadow-xl shadow-black/15 overflow-hidden w-full">
       <CardHeader className="bg-muted border-b border-border/50 h-[44px] sm:h-[72px] py-1 sm:py-1.5 px-2 sm:px-3">
         <div className="flex items-center justify-between w-full h-full">
           {/* MathStream Branding */}
@@ -156,7 +156,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                 value={a}
                 onChange={(e) => setA(e.target.value)}
                 disabled={isLoading || !isSignedIn}
-                className="bg-muted/30 border-border text-foreground placeholder:text-foreground/20 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
+                className="bg-muted border-border text-foreground placeholder:text-foreground/50 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
                 required
               />
             </div>
@@ -169,7 +169,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                 value={b}
                 onChange={(e) => setB(e.target.value)}
                 disabled={isLoading || !isSignedIn}
-                className="bg-muted/30 border-border text-foreground placeholder:text-foreground/20 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
+                className="bg-muted border-border text-foreground placeholder:text-foreground/50 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
                 required
               />
             </div>
@@ -180,7 +180,7 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
             <Button
               type="submit"
               disabled={isLoading || !a || !b || !isSignedIn}
-              className="flex-1 bg-secondary hover:bg-secondary/90 text-secondary-foreground font-black uppercase h-7 sm:h-8 text-[8px] sm:text-[9px] shadow-lg shadow-secondary/10 transition-all active:scale-[0.98] rounded-md"
+              className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-black uppercase h-7 sm:h-8 text-[8px] sm:text-[9px] shadow-lg shadow-foreground/20 transition-all active:scale-[0.98] rounded-md"
             >
               {isLoading ? (
                 <>
@@ -204,8 +204,8 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                 disabled={isLoading || !isSignedIn}
                 className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${
                   mode === 'classic'
-                    ? 'bg-foreground/10 text-foreground shadow-sm'
-                    : 'text-foreground/30 hover:text-foreground/50'
+                    ? 'bg-foreground text-background shadow-sm'
+                    : 'text-foreground/50 hover:text-foreground/70'
                 }`}
               >
                 <Calculator className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -217,8 +217,8 @@ export function ComputeForm({ onComputationCreated, isProcessing }: ComputeFormP
                 disabled={isLoading || !isSignedIn}
                 className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${
                   mode === 'ai'
-                    ? 'bg-secondary text-secondary-foreground shadow-sm'
-                    : 'text-foreground/30 hover:text-foreground/50'
+                    ? 'bg-foreground text-background shadow-sm'
+                    : 'text-foreground/50 hover:text-foreground/70'
                 }`}
               >
                 <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3" />

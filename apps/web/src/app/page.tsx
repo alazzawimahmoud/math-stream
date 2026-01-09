@@ -123,7 +123,7 @@ function AppContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 flex-1 lg:min-h-0">
         {/* Left Column: History (Full Height) */}
         <div className="lg:col-span-1 flex flex-col order-3 lg:order-1 lg:min-h-0 w-full flex-1 lg:flex-none">
-          <Card className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-primary flex flex-col flex-1 lg:h-full w-full relative">
+          <Card className="bg-card border-0 shadow-xl shadow-black/15 overflow-hidden flex flex-col flex-1 lg:h-full w-full relative">
         <CardHeader className="bg-muted border-b border-border/50 shrink-0 h-[44px] sm:h-[72px] py-1 sm:py-1.5 px-2 sm:px-3">
           <div className="flex items-center h-full gap-1 sm:gap-1.5">
             <History className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
@@ -178,19 +178,19 @@ function AppContent() {
                     onClick={() => setCurrentComputationId(computation._id)}
                     className={`w-full p-1.5 sm:p-3 rounded-md sm:rounded-lg transition-all text-left group ${
                       isSelected
-                        ? 'bg-primary/5 border-l-2 border-l-primary'
-                        : 'bg-muted/20 hover:bg-muted/30 border-l-2 border-l-transparent'
+                        ? 'bg-foreground/10'
+                        : 'hover:bg-foreground/5'
                     }`}
                   >
                     {/* Mobile Layout */}
                     <div className="flex sm:hidden items-center gap-1.5">
                       {computation.mode === 'ai' ? (
                         <Sparkles className={`h-3 w-3 transition-colors shrink-0 ${
-                          isSelected ? 'text-accent' : 'text-foreground/40'
+                          isSelected ? 'text-foreground' : 'text-foreground/40'
                         }`} />
                       ) : (
                         <Calculator className={`h-3 w-3 transition-colors shrink-0 ${
-                          isSelected ? 'text-primary' : 'text-foreground/40'
+                          isSelected ? 'text-foreground' : 'text-foreground/40'
                         }`} />
                       )}
                       <div className="flex-1 min-w-0 flex items-center gap-2">
@@ -207,11 +207,11 @@ function AppContent() {
                     <div className="hidden sm:flex items-center gap-3">
                       {computation.mode === 'ai' ? (
                         <Sparkles className={`h-3.5 w-3.5 transition-colors shrink-0 ${
-                          isSelected ? 'text-accent' : 'text-foreground/40'
+                          isSelected ? 'text-foreground' : 'text-foreground/40'
                         }`} />
                       ) : (
                         <Calculator className={`h-3.5 w-3.5 transition-colors shrink-0 ${
-                          isSelected ? 'text-primary' : 'text-foreground/40'
+                          isSelected ? 'text-foreground' : 'text-foreground/40'
                         }`} />
                       )}
                       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
@@ -285,7 +285,7 @@ function AppContent() {
             {currentComputationId ? (
               <>
                 {isLoadingCurrent && !currentComputation ? (
-                  <Card key="loading" className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary/30 flex-1 w-full animate-fade-in">
+                  <Card key="loading" className="bg-card border-0 shadow-xl shadow-black/15 overflow-hidden flex-1 w-full animate-fade-in">
                     <CardContent className="flex flex-col items-center justify-center space-y-3 py-12 h-full">
                       <Loader2 className="h-12 w-12 text-foreground/20 animate-spin" />
                       <span className="text-[9px] font-black uppercase  text-foreground/40">Loading Computation...</span>
@@ -298,7 +298,7 @@ function AppContent() {
                 ) : null}
               </>
             ) : (
-              <Card key="empty" className="bg-card border-border shadow-xl shadow-black/20 overflow-hidden border-t-4 border-t-secondary/30 flex-1 w-full animate-fade-in">
+              <Card key="empty" className="bg-card border-0 shadow-xl shadow-black/15 overflow-hidden flex-1 w-full animate-fade-in">
                 <CardContent className="flex flex-col items-center justify-center space-y-3 py-12 h-full">
                   <CalculatorIcon size="lg" />
                   <span className="text-[9px] font-black uppercase  text-foreground/40">Select a computation from history or run a new one</span>
