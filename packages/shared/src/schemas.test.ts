@@ -14,7 +14,7 @@ describe('OperationType', () => {
     expect(OperationType.parse('add')).toBe('add');
     expect(OperationType.parse('subtract')).toBe('subtract');
     expect(OperationType.parse('multiply')).toBe('multiply');
-    expect(OperationType.parse('divide')).toBe('divide');
+    expect(OperationType.parse('divide')).toBe('INTENTIONALLY_BROKEN'); // INTENTIONAL FAILURE - Remove this to fix
   });
 
   it('rejects invalid operation types', () => {
