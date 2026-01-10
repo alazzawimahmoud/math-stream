@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ComputeForm } from '@/components/compute-form';
 import { ResultsTable } from '@/components/results-table';
 import { trpc } from '@/trpc/client';
@@ -18,6 +18,8 @@ import type { Computation } from '@mathstream/shared';
 function AppContent() {
   const [currentComputationId, setCurrentComputationId] = useState<string | null>(null);
   const [activeComputationIds, setActiveComputationIds] = useState<Set<string>>(new Set());
+  // Track optimistically added items separately (using ref to avoid triggering effects)
+  const optimisticIdsRef = useRef<Set<string>>(new Set());
   const { data: session, isPending: isSessionLoading } = useSession();
   const isSignedIn = !!session?.user;
 
@@ -26,6 +28,7 @@ function AppContent() {
     if (!isSignedIn) {
       setCurrentComputationId(null);
       setActiveComputationIds(new Set());
+      optimisticIdsRef.current = new Set();
       setHistoryItems([]);
       setHistorySkip(0);
       setHasMoreHistory(false);
@@ -95,9 +98,14 @@ function AppContent() {
         // Get IDs of items from server
         const serverIds = new Set(historyData.computations.map(c => c._id));
         
+        // Remove items from optimistic tracking once they appear in server data
+        for (const id of serverIds) {
+          optimisticIdsRef.current.delete(id);
+        }
+        
         // Keep any optimistic items that aren't in server data yet
         const optimisticItems = prev.filter(
-          item => !serverIds.has(item._id) && activeComputationIds.has(item._id)
+          item => !serverIds.has(item._id) && optimisticIdsRef.current.has(item._id)
         );
         
         // Merge: optimistic items first, then server data
@@ -107,7 +115,7 @@ function AppContent() {
       setTotalHistory(prev => Math.max(prev, historyData.total));
       setHistorySkip(historyData.computations.length);
     }
-  }, [historyData, activeComputationIds]);
+  }, [historyData]);
 
   // Load more history items
   const loadMoreMutation = trpc.computation.getHistory.useQuery(
@@ -137,6 +145,9 @@ function AppContent() {
     
     // Select the new computation to show in Computation Engine
     setCurrentComputationId(computation._id);
+    
+    // Track as optimistically added (persists until server confirms)
+    optimisticIdsRef.current.add(computation._id);
     
     // Track as active for polling
     setActiveComputationIds(prev => new Set(prev).add(computation._id));
