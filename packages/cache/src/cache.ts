@@ -1,10 +1,16 @@
 import { Redis } from 'ioredis';
-import { getConfig, type Computation } from '@mathstream/shared';
+import { getConfig, type Computation, type ComputationMode, type OperationType } from '@mathstream/shared';
 
 let redis: Redis | null = null;
 
 const CACHE_PREFIX = 'mathstream:computation:';
+const RESULT_PREFIX = 'mathstream:result:';
 const CACHE_TTL_SECONDS = 3600; // 1 hour
+
+interface CachedResult {
+  result: number | null;
+  error: string | null;
+}
 
 function getRedis(): Redis {
   if (!redis) {
@@ -54,4 +60,38 @@ export async function closeCache(): Promise<void> {
     await redis.quit();
     redis = null;
   }
+}
+
+export async function getCachedResult(
+  a: number,
+  b: number,
+  mode: ComputationMode,
+  operation: OperationType
+): Promise<CachedResult | null> {
+  const client = getRedis();
+  const key = `${RESULT_PREFIX}${a}:${b}:${mode}:${operation}`;
+  const cached = await client.get(key);
+  
+  if (!cached) return null;
+  
+  return JSON.parse(cached) as CachedResult;
+}
+
+export async function cacheResult(
+  a: number,
+  b: number,
+  mode: ComputationMode,
+  operation: OperationType,
+  result: number | null,
+  error: string | null
+): Promise<void> {
+  const client = getRedis();
+  const key = `${RESULT_PREFIX}${a}:${b}:${mode}:${operation}`;
+  const cachedResult: CachedResult = { result, error };
+  
+  await client.setex(
+    key,
+    CACHE_TTL_SECONDS,
+    JSON.stringify(cachedResult)
+  );
 }

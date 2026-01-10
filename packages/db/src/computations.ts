@@ -124,3 +124,38 @@ export async function updateResultComplete(
     }
   }
 }
+
+export async function findCompletedResult(
+  a: number,
+  b: number,
+  mode: ComputationMode,
+  operation: OperationType
+): Promise<{ result: number | null; error: string | null } | null> {
+  const db = getDb();
+  
+  // Find a computation with matching a, b, mode that has a completed result for the operation
+  // Using $elemMatch ensures both operation and status match on the same array element
+  const computation = await db.collection(COLLECTION).findOne({
+    a,
+    b,
+    mode,
+    results: {
+      $elemMatch: {
+        operation: operation,
+        status: { $in: ['completed', 'failed'] },
+      },
+    },
+  });
+  
+  if (!computation) return null;
+  
+  // Extract the specific result for the operation (guaranteed to exist due to $elemMatch)
+  const result = (computation.results as Result[]).find(
+    r => r.operation === operation && (r.status === 'completed' || r.status === 'failed')
+  )!; // Non-null assertion: $elemMatch guarantees a match exists
+  
+  return {
+    result: result.result,
+    error: result.error,
+  };
+}

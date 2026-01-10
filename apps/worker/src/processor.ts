@@ -1,6 +1,7 @@
 import type { Job } from 'bullmq';
 import { getConfig, type JobPayload } from '@mathstream/shared';
-import { updateResultProgress, updateResultComplete } from '@mathstream/db';
+import { updateResultProgress, updateResultComplete, findCompletedResult } from '@mathstream/db';
+import { getCachedResult, cacheResult } from '@mathstream/cache';
 import { calculateClassic } from './calculators/classic';
 import { calculateAI } from './calculators/ai';
 
@@ -33,6 +34,24 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
   
   console.log(`Processing ${operation} (${mode} mode) for computation ${computationId}`);
   
+  // 1. Check cache first
+  const cachedResult = await getCachedResult(a, b, mode, operation);
+  if (cachedResult) {
+    await updateResultComplete(computationId, operation, cachedResult.result, cachedResult.error);
+    console.log(`Cache hit for ${operation}: ${cachedResult.result ?? cachedResult.error}`);
+    return;
+  }
+  
+  // 2. Check database
+  const dbResult = await findCompletedResult(a, b, mode, operation);
+  if (dbResult) {
+    await cacheResult(a, b, mode, operation, dbResult.result, dbResult.error);
+    await updateResultComplete(computationId, operation, dbResult.result, dbResult.error);
+    console.log(`DB hit for ${operation}: ${dbResult.result ?? dbResult.error}`);
+    return;
+  }
+  
+  // 3. No existing result found - compute normally
   const intervals = generateRandomIntervals(JOB_DELAY_MS, 3);
   let elapsedTime = 0;
   
@@ -53,6 +72,8 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
         ? await calculateAI(operation, a, b)
         : calculateClassic(operation, a, b);
       
+      // 4. Cache the new result after computation
+      await cacheResult(a, b, mode, operation, result, error);
       await updateResultComplete(computationId, operation, result, error);
       console.log(`Completed ${operation} (${mode}): ${result ?? error}`);
     }

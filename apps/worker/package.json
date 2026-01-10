@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^1.0.12",
+    "@mathstream/cache": "workspace:*",
     "@mathstream/db": "workspace:*",
     "@mathstream/queue": "workspace:*",
     "@mathstream/shared": "workspace:*",

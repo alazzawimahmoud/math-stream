@@ -120,6 +120,9 @@ importers:
       '@ai-sdk/google':
         specifier: ^1.0.12
         version: 1.2.22(zod@4.3.5)
+      '@mathstream/cache':
+        specifier: workspace:*
+        version: link:../../packages/cache
       '@mathstream/db':
         specifier: workspace:*
         version: link:../../packages/db
