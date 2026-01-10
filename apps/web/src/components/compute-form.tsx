@@ -11,6 +11,7 @@ import { Calculator, Sparkles, Loader2 } from 'lucide-react';
 import { GoogleIcon } from '@/components/icons/google';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/components/logout-button';
+import { UserSettingsDialog } from '@/components/user-settings-dialog';
 import Image from 'next/image';
 import type { ComputationMode } from '@mathstream/shared';
 
@@ -22,6 +23,7 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
   const [a, setA] = useState<string>('');
   const [b, setB] = useState<string>('');
   const [mode, setMode] = useState<ComputationMode>('classic');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { data: session, isPending: isSessionLoading } = useSession();
 
   const createMutation = trpc.computation.create.useMutation({
@@ -81,12 +83,19 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
           {/* User controls - visible below lg */}
           {isSessionLoading ? null : session?.user ? (
             <div className="flex items-center gap-1.5 sm:gap-2 lg:hidden">
-              <Avatar className="h-6 w-6 sm:h-7 sm:w-7 border border-border">
-                <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold">
-                  {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
-                </AvatarFallback>
-              </Avatar>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="cursor-pointer"
+                aria-label="Open settings"
+              >
+                <Avatar className="h-6 w-6 sm:h-7 sm:w-7 border border-border">
+                  <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold">
+                    {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
               <ThemeToggle />
               <LogoutButton />
             </div>
@@ -111,12 +120,19 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
                 <span className="absolute right-full mr-2 px-2 py-1 bg-card border border-border rounded text-foreground font-medium text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg">
                   {session.user.name?.split(' ')[0] ?? 'User'}
                 </span>
-                <Avatar className="h-8 w-8 border border-border cursor-pointer">
-                  <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
-                    {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <button
+                  type="button"
+                  onClick={() => setSettingsOpen(true)}
+                  className="cursor-pointer"
+                  aria-label="Open settings"
+                >
+                  <Avatar className="h-8 w-8 border border-border cursor-pointer">
+                    <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
+                      {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
               </div>
             </div>
           ) : (
@@ -226,6 +242,7 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
           )}
         </form>
       </CardContent>
+      <UserSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </Card>
   );
 }

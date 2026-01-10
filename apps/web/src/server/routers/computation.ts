@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc';
 import { CreateComputationInput } from '@mathstream/shared';
-import { createComputation, getComputation, getComputationsByUser, connectDb } from '@mathstream/db';
+import { createComputation, getComputation, getComputationsByUser, connectDb, getUserPreferences } from '@mathstream/db';
 import { addComputationJobs } from '@mathstream/queue';
 import { getCachedComputation, cacheComputation } from '@mathstream/cache';
 
@@ -23,7 +23,16 @@ export const computationRouter = router({
       const userId = ctx.session.user.id;
       
       const computationId = await createComputation(userId, a, b, mode);
-      await addComputationJobs(computationId, a, b, mode);
+      
+      // Get user preferences and pass useCache flag
+      const preferences = await getUserPreferences(userId);
+      await addComputationJobs(
+        computationId, 
+        a, 
+        b, 
+        mode,
+        preferences.enableResultReuse
+      );
       
       // Return full computation for optimistic UI updates
       const computation = await getComputation(computationId);

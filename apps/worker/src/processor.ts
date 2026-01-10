@@ -29,29 +29,32 @@ function randomJitter(min: number, max: number): number {
 }
 
 export async function processJob(job: Job<JobPayload>): Promise<void> {
-  const { computationId, operation, a, b, mode } = job.data;
+  const { computationId, operation, a, b, mode, useCache } = job.data;
   const { JOB_DELAY_MS } = getConfig();
   
   console.log(`Processing ${operation} (${mode} mode) for computation ${computationId}`);
   
-  // 1. Check cache first
-  const cachedResult = await getCachedResult(a, b, mode, operation);
-  if (cachedResult) {
-    await updateResultComplete(computationId, operation, cachedResult.result, cachedResult.error);
-    console.log(`Cache hit for ${operation}: ${cachedResult.result ?? cachedResult.error}`);
-    return;
+  // Only perform result reuse if useCache is true
+  if (useCache) {
+    // 1. Check cache first
+    const cachedResult = await getCachedResult(a, b, mode, operation);
+    if (cachedResult) {
+      await updateResultComplete(computationId, operation, cachedResult.result, cachedResult.error);
+      console.log(`Cache hit for ${operation}: ${cachedResult.result ?? cachedResult.error}`);
+      return;
+    }
+    
+    // 2. Check database
+    const dbResult = await findCompletedResult(a, b, mode, operation);
+    if (dbResult) {
+      await cacheResult(a, b, mode, operation, dbResult.result, dbResult.error);
+      await updateResultComplete(computationId, operation, dbResult.result, dbResult.error);
+      console.log(`DB hit for ${operation}: ${dbResult.result ?? dbResult.error}`);
+      return;
+    }
   }
   
-  // 2. Check database
-  const dbResult = await findCompletedResult(a, b, mode, operation);
-  if (dbResult) {
-    await cacheResult(a, b, mode, operation, dbResult.result, dbResult.error);
-    await updateResultComplete(computationId, operation, dbResult.result, dbResult.error);
-    console.log(`DB hit for ${operation}: ${dbResult.result ?? dbResult.error}`);
-    return;
-  }
-  
-  // 3. No existing result found - compute normally
+  // 3. No existing result found or caching disabled - compute normally
   const intervals = generateRandomIntervals(JOB_DELAY_MS, 3);
   let elapsedTime = 0;
   
@@ -79,4 +82,3 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
     }
   }
 }
-

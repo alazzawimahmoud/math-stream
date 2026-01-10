@@ -37,6 +37,7 @@ export const JobPayload = z.object({
   a: z.number(),
   b: z.number(),
   mode: ComputationMode,
+  useCache: z.boolean().optional(),
 });
 
 export type OperationType = z.infer<typeof OperationType>;

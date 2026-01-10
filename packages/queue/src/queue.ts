@@ -26,14 +26,15 @@ export async function addComputationJobs(
   computationId: string,
   a: number,
   b: number,
-  mode: ComputationMode
+  mode: ComputationMode,
+  useCache: boolean = false
 ): Promise<void> {
   const queue = getComputationQueue();
   const operations = ['add', 'subtract', 'multiply', 'divide'] as const;
   
   const jobs = operations.map(operation => ({
     name: operation,
-    data: { computationId, operation, a, b, mode },
+    data: { computationId, operation, a, b, mode, useCache },
   }));
   
   await queue.addBulk(jobs);
