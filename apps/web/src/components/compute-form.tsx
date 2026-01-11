@@ -27,7 +27,6 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
   const createMutation = trpc.computation.create.useMutation({
     onSuccess: (data) => {
       onComputationCreated(data);
-      // Clear inputs after successful submission
       setA('');
       setB('');
     },
@@ -63,21 +62,20 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
   };
 
   return (
-    <Card className="bg-card border-0 shadow-xl shadow-black/15 overflow-hidden w-full">
-      <CardHeader className="bg-muted border-b border-border/50 h-[44px] sm:h-[72px] py-1 sm:py-1.5 px-2 sm:px-3">
+    <Card className="overflow-hidden w-full">
+      <CardHeader className="bg-gradient-to-r from-muted/80 to-muted/40 dark:from-muted/60 dark:to-muted/30 border-b border-border/50 h-[52px] py-2.5 px-3">
         <div className="flex items-center justify-between w-full h-full">
-          {/* MathStream Branding */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          <div className="flex items-center gap-2.5">
             <Image 
               src="/logo.png" 
               alt="MathStream" 
               width={108}
               height={108}
               quality={95}
-              className="h-10 w-10 sm:h-11 sm:w-11"
+              className="h-8 w-8"
               priority
             />
-            <span className="text-xs sm:text-lg font-bold text-primary">
+            <span className="text-base font-semibold text-foreground tracking-tight">
               MathStream
             </span>
           </div>
@@ -91,16 +89,44 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
           )}
         </div>
       </CardHeader>
-      <CardContent className="pt-2 pb-2 sm:pt-3 sm:pb-3 px-2 sm:px-6">
-        <div className="mb-1.5 sm:mb-2 pb-1 sm:pb-1.5 border-b border-border/40">
-          <p className="text-foreground/80 text-[9px] sm:text-[10px] font-black uppercase">Enter two numbers to compute</p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-1.5 sm:space-y-2.5">
+      <CardContent className="py-3 px-3">
+        <form onSubmit={handleSubmit} className="space-y-2.5">
+          {/* Mode Toggle - Compact pill */}
+          <div className="flex justify-center">
+            <div className={`inline-flex items-center p-0.5 rounded-full bg-muted neu-pressed-sm ${isSubmitting || !isSignedIn ? 'opacity-50' : ''}`}>
+              <button
+                type="button"
+                onClick={() => setMode('classic')}
+                disabled={isSubmitting || !isSignedIn}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                  mode === 'classic'
+                    ? 'gradient-blue text-secondary-foreground neu-raised-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Calculator className="h-3 w-3" />
+                <span>Classic</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('ai')}
+                disabled={isSubmitting || !isSignedIn}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                  mode === 'ai'
+                    ? 'gradient-purple text-accent-foreground neu-raised-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Sparkles className="h-3 w-3" />
+                <span>AI Mode</span>
+              </button>
+            </div>
+          </div>
+          
           {/* Inputs row */}
-          <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-            <div className="space-y-0.5 sm:space-y-1">
-              <label className="text-[8px] sm:text-[9px] font-black uppercase text-foreground/40">Number A</label>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <label className="text-[10px] font-medium text-muted-foreground ml-1">Number A</label>
               <Input
                 type="number"
                 step="any"
@@ -108,12 +134,12 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
                 value={a}
                 onChange={(e) => setA(e.target.value)}
                 disabled={isSubmitting || !isSignedIn}
-                className="bg-muted border-border text-foreground placeholder:text-foreground/50 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
+                className="text-sm font-mono h-9"
                 required
               />
             </div>
-            <div className="space-y-0.5 sm:space-y-1">
-              <label className="text-[8px] sm:text-[9px] font-black uppercase text-foreground/40">Number B</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-medium text-muted-foreground ml-1">Number B</label>
               <Input
                 type="number"
                 step="any"
@@ -121,67 +147,41 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
                 value={b}
                 onChange={(e) => setB(e.target.value)}
                 disabled={isSubmitting || !isSignedIn}
-                className="bg-muted border-border text-foreground placeholder:text-foreground/50 focus-visible:ring-secondary h-7 sm:h-8 text-sm sm:text-base font-mono"
+                className="text-sm font-mono h-9"
                 required
               />
             </div>
           </div>
           
-          {/* Actions row */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <Button
-              type="submit"
-              disabled={isSubmitting || !a || !b || !isSignedIn}
-              className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-black uppercase h-7 sm:h-8 text-[8px] sm:text-[9px] shadow-lg shadow-foreground/20 transition-all active:scale-[0.98] rounded-md"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  Submitting...
-                </>
-              ) : !isSignedIn ? (
-                <>
-                  <GoogleIcon className="h-3 w-3 mr-1" />
-                  Sign In
-                </>
-              ) : (
-                'Submit'
-              )}
-            </Button>
-            {/* AI/Classic Toggle */}
-            <div className={`grid grid-cols-2 h-7 sm:h-8 rounded-md sm:rounded-lg bg-muted p-0.5 gap-0.5 border border-border ${isSubmitting || !isSignedIn ? 'opacity-50' : ''}`}>
-              <button
-                type="button"
-                onClick={() => setMode('classic')}
-                disabled={isSubmitting || !isSignedIn}
-                className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${
-                  mode === 'classic'
-                    ? 'bg-foreground text-background shadow-sm'
-                    : 'text-foreground/50 hover:text-foreground/70'
-                }`}
-              >
-                <Calculator className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span className="hidden sm:inline">Classic</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('ai')}
-                disabled={isSubmitting || !isSignedIn}
-                className={`flex items-center justify-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${
-                  mode === 'ai'
-                    ? 'bg-foreground text-background shadow-sm'
-                    : 'text-foreground/50 hover:text-foreground/70'
-                }`}
-              >
-                <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span className="hidden sm:inline">AI</span>
-              </button>
-            </div>
-          </div>
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            disabled={isSubmitting || !a || !b || !isSignedIn}
+            variant={mode === 'ai' ? 'pill-accent' : 'pill'}
+            size="pill-sm"
+            className="w-full text-xs font-semibold h-9"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                Computing...
+              </>
+            ) : !isSignedIn ? (
+              <>
+                <GoogleIcon className="h-3.5 w-3.5 mr-1.5" />
+                Sign in to Compute
+              </>
+            ) : (
+              <>
+                {mode === 'ai' ? <Sparkles className="h-3.5 w-3.5 mr-1.5" /> : <Calculator className="h-3.5 w-3.5 mr-1.5" />}
+                Compute
+              </>
+            )}
+          </Button>
 
           {createMutation.error && (
-            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
-              <p className="text-destructive text-[10px] font-black uppercase  text-center">{createMutation.error.message}</p>
+            <div className="p-2 bg-destructive/10 rounded-xl neu-pressed-sm">
+              <p className="text-destructive text-xs font-medium text-center">{createMutation.error.message}</p>
             </div>
           )}
         </form>

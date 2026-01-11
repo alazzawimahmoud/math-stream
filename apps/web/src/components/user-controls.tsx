@@ -18,10 +18,9 @@ interface UserControlsProps {
 export function UserControls({ user, onSignIn, onOpenSettings }: UserControlsProps) {
   if (user) {
     return (
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-1.5">
         <div className="relative group flex items-center">
-          {/* Desktop hover tooltip */}
-          <span className="hidden lg:block absolute right-full mr-2 px-2 py-1 bg-card border border-border rounded text-foreground font-medium text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg">
+          <span className="hidden lg:block absolute right-full mr-2 px-2 py-1 bg-card rounded-lg text-foreground font-medium text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none neu-raised-sm">
             {user.name?.split(' ')[0] ?? 'User'}
           </span>
           <button
@@ -30,16 +29,15 @@ export function UserControls({ user, onSignIn, onOpenSettings }: UserControlsPro
             className="cursor-pointer"
             aria-label="Open settings"
           >
-            <Avatar className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 border border-border">
+            <Avatar className="h-7 w-7 ring-2 ring-border neu-raised-sm">
               <AvatarImage src={user.image ?? undefined} alt={user.name ?? ''} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-[10px] sm:text-xs lg:text-sm font-bold">
+              <AvatarFallback className="gradient-blue text-secondary-foreground text-xs font-semibold">
                 {user.name?.charAt(0).toUpperCase() ?? 'U'}
               </AvatarFallback>
             </Avatar>
           </button>
         </div>
-        {/* ThemeToggle and LogoutButton only on mobile/medium - on lg they're in fixed corner */}
-        <div className="flex items-center gap-1.5 sm:gap-2 lg:hidden">
+        <div className="flex items-center gap-1 lg:hidden">
           <ThemeToggle />
           <LogoutButton />
         </div>
@@ -47,19 +45,13 @@ export function UserControls({ user, onSignIn, onOpenSettings }: UserControlsPro
     );
   }
 
-  // Not signed in
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2">
-      {/* ThemeToggle only on mobile/medium */}
+    <div className="flex items-center gap-1.5">
       <div className="lg:hidden">
         <ThemeToggle />
       </div>
-      <Button
-        onClick={onSignIn}
-        size="sm"
-        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[9px] sm:text-[10px] px-2 sm:px-4 lg:px-6 py-1.5 sm:py-2 h-6 sm:h-auto"
-      >
-        <GoogleIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
+      <Button onClick={onSignIn} variant="pill" size="pill-sm" className="font-semibold text-[10px]">
+        <GoogleIcon className="h-3 w-3 mr-1" />
         Sign In
       </Button>
     </div>

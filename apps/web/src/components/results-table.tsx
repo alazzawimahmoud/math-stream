@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, XCircle, Loader2, Clock, Sparkles, Database } from 'lucide-react';
+import { GradientOrb } from '@/components/ui/gradient-orb';
+import { CheckCircle2, XCircle, Clock, Sparkles, Database } from 'lucide-react';
 import type { Computation } from '@mathstream/shared';
 
 interface ResultsTableProps {
@@ -21,86 +22,88 @@ const operationLabels: Record<string, string> = {
 const statusConfig = {
   pending: {
     icon: Clock,
-    color: 'text-foreground/60',
-    bgColor: 'bg-muted hover:bg-muted',
+    color: 'text-muted-foreground',
+    bgColor: 'bg-muted',
     label: 'Pending',
   },
   processing: {
-    icon: Loader2,
-    color: 'text-foreground',
-    bgColor: 'bg-foreground/10 hover:bg-foreground/10',
+    icon: null,
+    color: 'text-accent-foreground',
+    bgColor: 'gradient-purple',
     label: 'Processing',
   },
   completed: {
     icon: CheckCircle2,
-    color: 'text-foreground',
-    bgColor: 'bg-foreground/10 hover:bg-foreground/10',
+    color: 'text-success-foreground',
+    bgColor: 'gradient-green',
     label: 'Completed',
   },
   failed: {
     icon: XCircle,
     color: 'text-destructive',
-    bgColor: 'bg-destructive/10 hover:bg-destructive/10',
+    bgColor: 'bg-destructive/10',
     label: 'Failed',
   },
 };
 
 export function ResultsTable({ computation }: ResultsTableProps) {
+  const isProcessing = computation.status === 'processing' || computation.status === 'pending';
+  
   return (
-    <Card className="bg-card border-0 shadow-xl shadow-black/15 overflow-hidden h-full flex flex-col w-full">
-      <CardHeader className="bg-muted border-b border-border/50 h-[50px] sm:h-[70px] py-1.5 sm:py-2 px-2 sm:px-4">
+    <Card className="overflow-hidden h-full flex flex-col w-full">
+      <CardHeader className="bg-gradient-to-r from-muted/80 to-muted/40 dark:from-muted/60 dark:to-muted/30 border-b border-border/50 h-[52px] py-2.5 px-3">
         <div className="flex items-center justify-between w-full h-full">
-          <div className="space-y-0">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <CardTitle className="text-foreground text-sm sm:text-base font-black uppercase">
-                Computation Engine
+          <div className="flex items-center gap-2.5">
+            {isProcessing ? (
+              <GradientOrb variant="purple" size="sm" className="w-7 h-7" />
+            ) : (
+              <div className="w-7 h-7 rounded-full gradient-green flex items-center justify-center neu-raised-sm">
+                <CheckCircle2 className="h-3.5 w-3.5 text-success-foreground" />
+              </div>
+            )}
+            <div>
+              <CardTitle className="text-foreground text-sm font-semibold leading-tight">
+                {isProcessing ? 'Computing...' : 'Results Ready'}
               </CardTitle>
-              {/* Icons only for mobile */}
-              <div className="flex items-center gap-1 sm:hidden">
-                {computation.mode === 'ai' && (
-                  <Sparkles className="h-3.5 w-3.5 text-accent" />
-                )}
-                {computation.fromCache && (
-                  <Database className="h-3.5 w-3.5 text-primary" />
-                )}
+              <div className="text-[10px] text-muted-foreground font-medium flex items-center gap-2">
+                <span className="flex items-center gap-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  A: {computation.a}
+                </span>
+                <span className="flex items-center gap-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent-foreground"></span>
+                  B: {computation.b}
+                </span>
               </div>
             </div>
-            <div className="text-[8px] sm:text-[9px] text-foreground/40 font-black uppercase flex items-center gap-1.5 sm:gap-2">
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-secondary-foreground"></span> A: {computation.a}</span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-accent-foreground"></span> B: {computation.b}</span>
-            </div>
           </div>
-          {/* Badges with labels for desktop */}
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {computation.mode === 'ai' && (
-              <Badge variant="secondary" className="bg-accent text-accent-foreground border-transparent font-black uppercase  text-[8px] px-2 py-1 shadow-lg shadow-accent/10">
-                <Sparkles className="h-2.5 w-2.5 mr-1" />
-                AI Enhanced
+              <Badge variant="secondary" className="gradient-purple text-accent-foreground border-0 font-medium text-[9px] px-2 py-0.5 rounded-full neu-raised-sm">
+                <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                AI Mode
               </Badge>
             )}
             {computation.fromCache && (
-              <Badge variant="secondary" className="bg-primary text-primary-foreground border-transparent font-black uppercase  text-[8px] px-2 py-1 shadow-lg shadow-primary/10">
-                <Database className="h-2.5 w-2.5 mr-1" />
+              <Badge variant="secondary" className="gradient-blue text-secondary-foreground border-0 font-medium text-[9px] px-2 py-0.5 rounded-full neu-raised-sm">
+                <Database className="h-2.5 w-2.5 mr-0.5" />
                 Cached
               </Badge>
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-2 sm:pt-6 px-2 sm:px-6 flex-1 overflow-auto">
+      <CardContent className="py-3 px-3 flex-1 overflow-auto">
         {/* Total Progress */}
-        <div className="mb-2 sm:mb-6 p-2 sm:p-4 bg-muted/50 rounded-lg sm:rounded-xl border border-border/50 overflow-hidden">
-          <div className="flex items-center justify-between mb-1 sm:mb-2">
-            <span className="text-[8px] sm:text-[9px] font-black uppercase text-foreground/40">Total Execution Payload</span>
-            <span className="text-xs sm:text-sm font-black text-foreground font-mono">{computation.totalProgress}%</span>
+        <div className="mb-3 p-2 rounded-xl bg-muted/50 neu-pressed-sm">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-medium text-muted-foreground">Overall Progress</span>
+            <span className="text-xs font-semibold text-foreground tabular-nums">{computation.totalProgress}%</span>
           </div>
-          <Progress 
-            value={computation.totalProgress} 
-            className="h-2 sm:h-3 bg-muted border border-border shadow-inner"
-          />
+          <Progress value={computation.totalProgress} className="h-1.5" />
         </div>
 
-        {/* Mobile Results - Card Layout */}
+        {/* Mobile Results */}
         <div className="sm:hidden space-y-1.5">
           {computation.results.map((result) => {
             const status = statusConfig[result.status];
@@ -108,58 +111,48 @@ export function ResultsTable({ computation }: ResultsTableProps) {
             const isAnimating = result.status === 'processing';
             
             return (
-              <div key={result.operation} className="bg-muted/30 rounded-lg p-2 border border-border/30">
-                <div className="flex items-center justify-between gap-2">
-                  {/* Operation + Status Icon */}
+              <div key={result.operation} className="p-2 rounded-xl bg-card neu-flat">
+                <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-1.5">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${status.bgColor}`}>
-                      <StatusIcon className={`h-3 w-3 ${status.color} ${isAnimating ? 'animate-spin' : ''}`} />
-                    </div>
-                    <span className="text-[10px] font-black uppercase text-foreground">
+                    {isAnimating ? (
+                      <GradientOrb variant="purple" size="sm" className="w-5 h-5" />
+                    ) : (
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${status.bgColor} neu-raised-sm`}>
+                        {StatusIcon && <StatusIcon className={`h-2.5 w-2.5 ${status.color}`} />}
+                      </div>
+                    )}
+                    <span className="text-xs font-semibold text-foreground">
                       {operationLabels[result.operation]}
                     </span>
                   </div>
-                  
-                  {/* Result Value */}
                   <div className="flex items-center gap-1 min-w-0">
                     {result.status === 'completed' && result.result !== null ? (
-                      <span className="text-secondary-foreground font-mono font-black text-sm tabular-nums truncate selection:bg-secondary selection:text-secondary-foreground" title={String(result.result)}>
-                        {result.result}
-                      </span>
-                    ) : result.status === 'failed' && result.error ? (
-                      <span className="text-destructive text-[8px] font-black uppercase truncate" title={result.error}>
-                        Error
-                      </span>
+                      <span className="text-foreground font-mono font-semibold text-sm tabular-nums truncate">{result.result}</span>
+                    ) : result.status === 'failed' ? (
+                      <span className="text-destructive text-[10px] font-medium">Error</span>
                     ) : (
-                      <span className="text-foreground/20 text-[10px] font-mono">—</span>
+                      <span className="text-muted-foreground text-xs font-mono">—</span>
                     )}
                   </div>
                 </div>
-                
-                {/* Progress Bar */}
-                <div className="flex items-center gap-2 mt-1.5">
-                  <Progress 
-                    value={result.progress} 
-                    className="h-1 flex-1 bg-muted border border-border/50"
-                  />
-                  <span className="text-[8px] font-black text-foreground/30 w-7 text-right font-mono">
-                    {result.progress}%
-                  </span>
+                <div className="flex items-center gap-1.5">
+                  <Progress value={result.progress} className="h-1 flex-1" />
+                  <span className="text-[9px] font-medium text-muted-foreground w-7 text-right tabular-nums">{result.progress}%</span>
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Desktop Results - Table Layout */}
-        <div className="hidden sm:block rounded-2xl border border-border/50 overflow-hidden shadow-inner bg-muted/20">
+        {/* Desktop Results */}
+        <div className="hidden sm:block rounded-xl overflow-hidden neu-pressed-sm bg-muted/30">
           <Table className="table-fixed">
             <TableHeader>
-              <TableRow className="bg-muted border-border/50 hover:bg-muted transition-none">
-                <TableHead className="text-[9px] font-black uppercase text-foreground/40 py-2 px-4 w-[100px]">Operation</TableHead>
-                <TableHead className="text-[9px] font-black uppercase text-foreground/40 py-2 px-4 w-[180px]">Pipeline</TableHead>
-                <TableHead className="text-[9px] font-black uppercase text-foreground/40 py-2 px-4">Computed Value</TableHead>
-                <TableHead className="text-[9px] font-black uppercase text-foreground/40 text-right py-2 px-4 w-[120px]">Status</TableHead>
+              <TableRow className="bg-muted/50 border-0 hover:bg-muted/50">
+                <TableHead className="text-[10px] font-semibold text-muted-foreground py-2 px-3 w-[80px]">Operation</TableHead>
+                <TableHead className="text-[10px] font-semibold text-muted-foreground py-2 px-3 w-[140px]">Progress</TableHead>
+                <TableHead className="text-[10px] font-semibold text-muted-foreground py-2 px-3">Result</TableHead>
+                <TableHead className="text-[10px] font-semibold text-muted-foreground text-right py-2 px-3 w-[100px]">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -169,45 +162,42 @@ export function ResultsTable({ computation }: ResultsTableProps) {
                 const isAnimating = result.status === 'processing';
                 
                 return (
-                  <TableRow key={result.operation} className="border-border/50 hover:bg-card transition-all group">
-                    <TableCell className="text-foreground font-black uppercase text-xs py-3.5 px-4">
+                  <TableRow key={result.operation} className="border-0 hover:bg-card/50 transition-colors">
+                    <TableCell className="text-foreground font-semibold text-xs py-2 px-3">
                       {operationLabels[result.operation]}
                     </TableCell>
-                    <TableCell className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <Progress 
-                          value={result.progress} 
-                          className="h-1.5 flex-1 bg-muted border border-border/50"
-                        />
-                        <span className="text-[9px] font-black text-foreground/30 w-9 text-right font-mono">
-                          {result.progress}%
-                        </span>
+                    <TableCell className="py-2 px-3">
+                      <div className="flex items-center gap-2">
+                        <Progress value={result.progress} className="h-1 flex-1" />
+                        <span className="text-[10px] font-medium text-muted-foreground w-8 text-right tabular-nums">{result.progress}%</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-foreground font-mono font-black text-base py-3.5 px-4 max-w-0">
-                      <div className="min-h-[24px] flex items-center transition-opacity duration-300">
+                    <TableCell className="text-foreground font-mono font-semibold text-sm py-2 px-3 max-w-0">
+                      <div className="flex items-center">
                         {result.status === 'completed' && result.result !== null ? (
-                          <div className="flex items-center gap-2 min-w-0 animate-fade-in">
-                            <span className="text-secondary-foreground tabular-nums truncate selection:bg-secondary selection:text-secondary-foreground" title={String(result.result)}>{result.result}</span>
-                            <CheckCircle2 className="h-4 w-4 text-secondary-foreground/30 shrink-0" />
+                          <div className="flex items-center gap-1.5 min-w-0 animate-fade-in">
+                            <span className="tabular-nums truncate">{result.result}</span>
+                            <CheckCircle2 className="h-3 w-3 text-success-foreground/50 shrink-0" />
                           </div>
                         ) : result.status === 'failed' && result.error ? (
-                          <span className="text-destructive text-[10px] font-black uppercase leading-none bg-destructive/5 px-2 py-1 rounded border border-destructive/10 truncate block animate-fade-in" title={result.error}>{result.error}</span>
+                          <span className="text-destructive text-[10px] font-medium bg-destructive/10 px-1.5 py-0.5 rounded truncate animate-fade-in">{result.error}</span>
                         ) : (
-                          <div className="flex items-center gap-1.5 opacity-10 transition-opacity duration-300">
-                            <span className="w-8 h-1 bg-foreground rounded-full"></span>
-                          </div>
+                          <span className="text-muted-foreground/30">—</span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right py-3.5 px-4">
-                      <Badge 
-                        variant="secondary" 
-                        className={`${status.bgColor} ${status.color} border-transparent font-black uppercase text-[8px] px-2 py-1 shadow-sm`}
-                      >
-                        <StatusIcon className={`h-2.5 w-2.5 mr-1.5 ${isAnimating ? 'animate-spin' : ''}`} />
-                        {status.label}
-                      </Badge>
+                    <TableCell className="text-right py-2 px-3">
+                      {isAnimating ? (
+                        <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full gradient-purple neu-raised-sm">
+                          <GradientOrb variant="purple" size="sm" className="w-3 h-3" />
+                          <span className="text-[9px] font-semibold text-accent-foreground">{status.label}</span>
+                        </div>
+                      ) : (
+                        <Badge variant="secondary" className={`${status.bgColor} ${status.color} border-0 font-semibold text-[9px] px-2 py-1 rounded-full neu-raised-sm`}>
+                          {StatusIcon && <StatusIcon className="h-2.5 w-2.5 mr-1" />}
+                          {status.label}
+                        </Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

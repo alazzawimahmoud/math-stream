@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { GradientOrb } from '@/components/ui/gradient-orb';
 import { trpc } from '@/trpc/client';
 import { Loader2 } from 'lucide-react';
 
@@ -56,26 +57,27 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>User Settings</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-[450px] rounded-3xl neu-raised border-0 p-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-6 pb-4">
+          <DialogTitle className="text-xl font-semibold">Settings</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Configure your computation preferences
           </DialogDescription>
         </DialogHeader>
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <GradientOrb variant="blue" size="md" />
+            <span className="text-sm text-muted-foreground">Loading...</span>
           </div>
         ) : (
-          <div className="grid gap-4 py-4">
-            <div className="flex items-center justify-between space-x-2">
-              <div className="space-y-0.5">
-                <Label htmlFor="result-reuse" className="text-base">
+          <div className="px-6 py-4">
+            <div className="flex items-start justify-between gap-4 p-4 rounded-2xl bg-muted/50 neu-pressed-sm">
+              <div className="space-y-1">
+                <Label htmlFor="result-reuse" className="text-sm font-semibold">
                   Enable result reuse
                 </Label>
-                <p className="text-sm text-muted-foreground">
-                  When enabled, the system will reuse results from identical previous computations (same A, B, and Mode) to speed up processing.
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Reuse results from identical previous computations to speed up processing.
                 </p>
               </div>
               <Switch
@@ -87,15 +89,17 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
             </div>
           </div>
         )}
-        <DialogFooter>
+        <DialogFooter className="px-6 pb-6 pt-2 gap-2">
           <Button
             variant="outline"
             onClick={handleCancel}
             disabled={updateMutation.isPending}
+            className="rounded-full"
           >
             Cancel
           </Button>
           <Button
+            variant="pill"
             onClick={handleSave}
             disabled={updateMutation.isPending || isLoading}
           >
@@ -105,7 +109,7 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
                 Saving...
               </>
             ) : (
-              'Save'
+              'Save Changes'
             )}
           </Button>
         </DialogFooter>

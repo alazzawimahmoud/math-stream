@@ -7,33 +7,32 @@ import { Button } from './ui/button';
 export function ThemeToggle() {
   const { theme, toggleTheme, mounted } = useTheme();
 
-  // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
       <Button
-        variant="ghost"
-        size="icon"
-        className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-muted/50"
+        variant="neu"
+        size="icon-sm"
+        className="rounded-full"
         aria-label="Toggle theme"
         disabled
       >
-        <span className="h-3 w-3 sm:h-4 sm:w-4" />
+        <span className="h-3.5 w-3.5" />
       </Button>
     );
   }
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
+      variant="neu"
+      size="icon-sm"
       onClick={toggleTheme}
-      className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
+      className="rounded-full"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
       {theme === 'light' ? (
-        <Moon className="h-3 w-3 sm:h-4 sm:w-4" />
+        <Moon className="h-3.5 w-3.5" />
       ) : (
-        <Sun className="h-3 w-3 sm:h-4 sm:w-4" />
+        <Sun className="h-3.5 w-3.5" />
       )}
     </Button>
   );

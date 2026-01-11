@@ -17,13 +17,13 @@ export function LogoutButton() {
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
+      variant="neu"
+      size="icon-sm"
       onClick={handleSignOut}
-      className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
+      className="rounded-full"
       aria-label="Sign out"
     >
-      <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
+      <LogOut className="h-3.5 w-3.5" />
     </Button>
   );
 }
