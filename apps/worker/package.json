@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsup",
-    "dev": "tsx watch --env-file=../web/.env src/index.ts",
+    "dev": "NODE_ENV=development tsx watch --env-file=../web/.env src/index.ts",
     "start": "node dist/index.js",
     "lint": "tsc --noEmit",
     "test": "vitest run",
