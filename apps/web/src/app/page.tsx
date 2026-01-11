@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { ComputeForm } from '@/components/compute-form';
 import { ResultsTable } from '@/components/results-table';
 import { trpc } from '@/trpc/client';
@@ -13,7 +13,8 @@ import { GoogleIcon } from '@/components/icons/google';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/components/logout-button';
 import { useSession, signIn } from '@/lib/auth-client';
-import { useComputationSubscription } from '@/hooks/use-computation-subscription';
+import { useComputationSubscription, type ComputationUpdate } from '@/hooks/use-computation-subscription';
+import { useActiveComputationsSubscription } from '@/hooks/use-active-computations-subscription';
 import type { Computation } from '@mathstream/shared';
 
 function AppContent() {
@@ -56,13 +57,40 @@ function AppContent() {
     }
   );
 
-  // Subscribe to SSE updates for active computations
+  // Subscribe to SSE updates for the currently selected active computation (for detailed view)
   const { data: sseUpdate } = useComputationSubscription(
     isCurrentComputationActive ? currentComputationId : null,
     {
       enabled: isSignedIn && isCurrentComputationActive,
     }
   );
+
+  // Subscribe to SSE updates for ALL active computations (for list updates)
+  // This ensures computations update in the list even when not selected
+  const handleActiveComputationUpdate = useCallback((update: ComputationUpdate) => {
+    // Update the history items list with the new status
+    setHistoryItems(prev =>
+      prev.map(item =>
+        item._id === update.computationId
+          ? { ...item, status: update.status, results: update.results }
+          : item
+      )
+    );
+
+    // Remove from active set when completed
+    if (update.status === 'completed' || update.status === 'failed') {
+      setActiveComputationIds(prev => {
+        const next = new Set(prev);
+        next.delete(update.computationId);
+        return next;
+      });
+    }
+  }, []);
+
+  useActiveComputationsSubscription(activeComputationIds, {
+    enabled: isSignedIn,
+    onUpdate: handleActiveComputationUpdate,
+  });
 
   // Combine tRPC data and SSE updates
   const currentComputation = useMemo(() => {
@@ -86,27 +114,6 @@ function AppContent() {
     return trpcComputation ?? null;
   }, [sseUpdate, trpcComputation, currentComputationId, historyItems]);
 
-  // Update history items when current computation updates (for live status in list)
-  useEffect(() => {
-    if (currentComputation && activeComputationIds.has(currentComputation._id)) {
-      setHistoryItems(prev => 
-        prev.map(item => 
-          item._id === currentComputation._id 
-            ? { ...item, status: currentComputation.status }
-            : item
-        )
-      );
-      
-      // Remove from active set when completed
-      if (currentComputation.status === 'completed' || currentComputation.status === 'failed') {
-        setActiveComputationIds(prev => {
-          const next = new Set(prev);
-          next.delete(currentComputation._id);
-          return next;
-        });
-      }
-    }
-  }, [currentComputation, activeComputationIds]);
 
   // Fetch history (only when signed in)
   const { data: historyData, isLoading: isLoadingHistory, refetch: refetchHistory } = trpc.computation.getHistory.useQuery(
