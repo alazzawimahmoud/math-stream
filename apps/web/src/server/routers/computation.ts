@@ -1,18 +1,10 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc';
 import { CreateComputationInput, calculateTotalProgress } from '@mathstream/shared';
-import { createComputation, getComputation, getComputationsByUser, connectDb, getUserPreferences } from '@mathstream/db';
+import { createComputation, getComputation, getComputationsByUser, getUserPreferences } from '@mathstream/db';
 import { addComputationJobs } from '@mathstream/queue';
 import { getCachedComputation, cacheComputation } from '@mathstream/cache';
-
-// Initialize database connection
-let dbConnected = false;
-async function ensureDbConnection() {
-  if (!dbConnected) {
-    await connectDb();
-    dbConnected = true;
-  }
-}
+import { ensureDbConnection } from '@/lib/db';
 
 export const computationRouter = router({
   create: protectedProcedure

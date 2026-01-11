@@ -1,4 +1,10 @@
-import type { Result } from './schemas';
+import { OperationType, type Result } from './schemas';
+
+/**
+ * All supported mathematical operations.
+ * Derived from the OperationType zod enum.
+ */
+export const OPERATIONS = OperationType.options;
 
 /**
  * Calculates the total progress from an array of results.

@@ -28,13 +28,11 @@ vi.mock('next/headers', () => ({
 
 // Import after mocks
 const { userRouter } = await import('@/server/routers/user');
+import { createTestCaller as createCaller } from '../../helpers';
 
 // Helper to create a caller with session
 function createTestCaller(userId: string | null = 'test-user-456') {
-  const ctx = {
-    session: userId ? { user: { id: userId, name: 'Test User', email: 'test@example.com' } } : null,
-  };
-  return userRouter.createCaller(ctx as any);
+  return createCaller(userRouter, userId);
 }
 
 describe('userRouter', () => {

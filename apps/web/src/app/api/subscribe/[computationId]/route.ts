@@ -1,19 +1,11 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import { getComputation, connectDb } from '@mathstream/db';
+import { getComputation } from '@mathstream/db';
 import { subscribeToComputation, type ComputationUpdate } from '@mathstream/cache';
 import { calculateTotalProgress, type Computation } from '@mathstream/shared';
+import { ensureDbConnection } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-
-// Initialize database connection
-let dbConnected = false;
-async function ensureDbConnection() {
-  if (!dbConnected) {
-    await connectDb();
-    dbConnected = true;
-  }
-}
 
 // SSE response headers
 const SSE_HEADERS = {

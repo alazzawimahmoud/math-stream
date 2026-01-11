@@ -1,21 +1,14 @@
 import { betterAuth } from 'better-auth';
-import { MongoClient } from 'mongodb';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
+import { getMongoClient } from '@mathstream/db';
 
 // Lazy initialization to prevent build-time errors when env vars are not available
-let _client: MongoClient | null = null;
 let _auth: ReturnType<typeof betterAuth> | null = null;
-
-function getClient() {
-  if (!_client) {
-    _client = new MongoClient(process.env.MONGODB_URL!);
-  }
-  return _client;
-}
 
 function createAuth() {
   if (!_auth) {
-    const db = getClient().db();
+    // Use shared MongoDB client from @mathstream/db to avoid multiple connection pools
+    const db = getMongoClient().db();
     _auth = betterAuth({
       database: mongodbAdapter(db),
       emailAndPassword: {

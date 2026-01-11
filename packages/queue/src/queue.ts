@@ -1,9 +1,11 @@
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
-import { getConfig, type JobPayload, type ComputationMode } from '@mathstream/shared';
+import { getConfig, OPERATIONS, type JobPayload, type ComputationMode } from '@mathstream/shared';
 
 let connection: Redis | null = null;
 let queue: Queue<JobPayload> | null = null;
+
+export const QUEUE_NAME = 'mathstream-computations';
 
 export function getRedisConnection(): Redis {
   if (!connection) {
@@ -15,7 +17,7 @@ export function getRedisConnection(): Redis {
 
 export function getComputationQueue(): Queue<JobPayload> {
   if (!queue) {
-    queue = new Queue<JobPayload>('mathstream-computations', {
+    queue = new Queue<JobPayload>(QUEUE_NAME, {
       connection: getRedisConnection(),
     });
   }
@@ -30,9 +32,8 @@ export async function addComputationJobs(
   useCache: boolean = false
 ): Promise<void> {
   const queue = getComputationQueue();
-  const operations = ['add', 'subtract', 'multiply', 'divide'] as const;
   
-  const jobs = operations.map(operation => ({
+  const jobs = OPERATIONS.map(operation => ({
     name: operation,
     data: { computationId, operation, a, b, mode, useCache },
   }));

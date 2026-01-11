@@ -1,14 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
-import type { Computation } from '@mathstream/shared';
-
-export interface ComputationUpdate {
-  computationId: string;
-  status: Computation['status'];
-  results: Computation['results'];
-  totalProgress: number;
-}
+import type { ComputationUpdate } from '@/types/computation';
 
 export interface UseActiveComputationsSubscriptionOptions {
   enabled?: boolean;

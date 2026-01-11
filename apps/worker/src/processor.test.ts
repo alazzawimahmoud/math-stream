@@ -16,19 +16,23 @@ vi.mock('@mathstream/shared', async () => {
 const mockUpdateResultProgress = vi.fn();
 const mockUpdateResultComplete = vi.fn();
 const mockFindCompletedResult = vi.fn();
+const mockGetComputation = vi.fn();
 
 vi.mock('@mathstream/db', () => ({
   updateResultProgress: mockUpdateResultProgress,
   updateResultComplete: mockUpdateResultComplete,
   findCompletedResult: mockFindCompletedResult,
+  getComputation: mockGetComputation,
 }));
 
 const mockGetCachedResult = vi.fn();
 const mockCacheResult = vi.fn();
+const mockPublishComputationUpdate = vi.fn();
 
 vi.mock('@mathstream/cache', () => ({
   getCachedResult: mockGetCachedResult,
   cacheResult: mockCacheResult,
+  publishComputationUpdate: mockPublishComputationUpdate,
 }));
 
 const mockCalculateClassic = vi.fn();
@@ -56,6 +60,17 @@ describe('processJob', () => {
     vi.clearAllMocks();
     mockCalculateClassic.mockReturnValue({ result: 15, error: null });
     mockCalculateAI.mockResolvedValue({ result: 15, error: null });
+    // Mock getComputation to return a valid computation for publishUpdate
+    mockGetComputation.mockResolvedValue({
+      _id: 'test-comp',
+      status: 'processing',
+      results: [
+        { operation: 'add', progress: 0, result: null, status: 'pending', error: null, completedAt: null },
+        { operation: 'subtract', progress: 0, result: null, status: 'pending', error: null, completedAt: null },
+        { operation: 'multiply', progress: 0, result: null, status: 'pending', error: null, completedAt: null },
+        { operation: 'divide', progress: 0, result: null, status: 'pending', error: null, completedAt: null },
+      ],
+    });
   });
 
   describe('cache behavior', () => {

@@ -1,17 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { trpc } from '@/trpc/client';
 import { useSession, signIn } from '@/lib/auth-client';
 import { Calculator, Sparkles, Loader2 } from 'lucide-react';
 import { GoogleIcon } from '@/components/icons/google';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { LogoutButton } from '@/components/logout-button';
 import { UserSettingsDialog } from '@/components/user-settings-dialog';
+import { UserControls } from '@/components/user-controls';
 import Image from 'next/image';
 import type { ComputationMode } from '@mathstream/shared';
 
@@ -38,9 +36,13 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
   const isSubmitting = createMutation.isPending;
   const isSignedIn = !!session?.user;
 
-  const handleSignIn = () => {
+  const handleSignIn = useCallback(() => {
     signIn.social({ provider: 'google', callbackURL: '/' });
-  };
+  }, []);
+
+  const handleOpenSettings = useCallback(() => {
+    setSettingsOpen(true);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,70 +82,12 @@ export function ComputeForm({ onComputationCreated }: ComputeFormProps) {
             </span>
           </div>
           
-          {/* User controls - visible below lg */}
-          {isSessionLoading ? null : session?.user ? (
-            <div className="flex items-center gap-1.5 sm:gap-2 lg:hidden">
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(true)}
-                className="cursor-pointer"
-                aria-label="Open settings"
-              >
-                <Avatar className="h-6 w-6 sm:h-7 sm:w-7 border border-border">
-                  <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold">
-                    {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-              <ThemeToggle />
-              <LogoutButton />
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 sm:gap-2 lg:hidden">
-              <ThemeToggle />
-              <Button
-                onClick={handleSignIn}
-                size="sm"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[9px] sm:text-[10px] px-2 sm:px-4 py-1.5 sm:py-2 h-6 sm:h-auto"
-              >
-                <GoogleIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
-                Sign In
-              </Button>
-            </div>
-          )}
-          
-          {/* User controls - large screens only */}
-          {isSessionLoading ? null : session?.user ? (
-            <div className="hidden lg:flex items-center">
-              <div className="relative group flex items-center">
-                <span className="absolute right-full mr-2 px-2 py-1 bg-card border border-border rounded text-foreground font-medium text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg">
-                  {session.user.name?.split(' ')[0] ?? 'User'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSettingsOpen(true)}
-                  className="cursor-pointer"
-                  aria-label="Open settings"
-                >
-                  <Avatar className="h-8 w-8 border border-border cursor-pointer">
-                    <AvatarImage src={session.user.image ?? undefined} alt={session.user.name ?? ''} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
-                      {session.user.name?.charAt(0).toUpperCase() ?? 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <Button
-              onClick={handleSignIn}
-              size="sm"
-              className="hidden lg:flex bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase text-[10px] px-6 py-2"
-            >
-              <GoogleIcon className="h-3.5 w-3.5 mr-1.5" />
-              Sign In
-            </Button>
+          {!isSessionLoading && (
+            <UserControls
+              user={session?.user ?? null}
+              onSignIn={handleSignIn}
+              onOpenSettings={handleOpenSettings}
+            />
           )}
         </div>
       </CardHeader>

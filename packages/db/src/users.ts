@@ -1,6 +1,5 @@
 import { getDb } from './client';
-
-const USERS_COLLECTION = 'users';
+import { COLLECTIONS } from './collections';
 
 export interface UserPreferences {
   enableResultReuse: boolean;
@@ -10,7 +9,7 @@ export async function getUserPreferences(
   userId: string
 ): Promise<UserPreferences> {
   const db = getDb();
-  const doc = await db.collection(USERS_COLLECTION).findOne({ userId });
+  const doc = await db.collection(COLLECTIONS.USERS).findOne({ userId });
   
   if (!doc || !doc.preferences) {
     // Return default preferences if user document doesn't exist or has no preferences
@@ -33,7 +32,7 @@ export async function updateUserPreferences(
   const updated = { ...current, ...preferences };
   
   // Upsert user document with preferences
-  await db.collection(USERS_COLLECTION).updateOne(
+  await db.collection(COLLECTIONS.USERS).updateOne(
     { userId },
     {
       $set: {

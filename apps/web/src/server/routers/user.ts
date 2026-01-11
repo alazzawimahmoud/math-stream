@@ -1,16 +1,7 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc';
 import { getUserPreferences, updateUserPreferences } from '@mathstream/db';
-import { connectDb } from '@mathstream/db';
-
-// Initialize database connection
-let dbConnected = false;
-async function ensureDbConnection() {
-  if (!dbConnected) {
-    await connectDb();
-    dbConnected = true;
-  }
-}
+import { ensureDbConnection } from '@/lib/db';
 
 export const userRouter = router({
   getPreferences: protectedProcedure.query(async ({ ctx }) => {

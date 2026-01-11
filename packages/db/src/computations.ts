@@ -1,8 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { getDb } from './client';
-import type { Computation, OperationType, Result, ComputationMode } from '@mathstream/shared';
-
-const COLLECTION = 'computations';
+import { COLLECTIONS } from './collections';
+import { OPERATIONS, type Computation, type OperationType, type Result, type ComputationMode } from '@mathstream/shared';
 
 export async function createComputation(
   userId: string,
@@ -13,8 +12,7 @@ export async function createComputation(
   const db = getDb();
   const now = new Date();
   
-  const operations: OperationType[] = ['add', 'subtract', 'multiply', 'divide'];
-  const results: Result[] = operations.map(op => ({
+  const results: Result[] = OPERATIONS.map(op => ({
     operation: op,
     progress: 0,
     result: null,
@@ -34,13 +32,13 @@ export async function createComputation(
     updatedAt: now,
   };
   
-  const result = await db.collection(COLLECTION).insertOne(doc);
+  const result = await db.collection(COLLECTIONS.COMPUTATIONS).insertOne(doc);
   return result.insertedId.toString();
 }
 
 export async function getComputation(id: string): Promise<Computation | null> {
   const db = getDb();
-  const doc = await db.collection(COLLECTION).findOne({ _id: new ObjectId(id) });
+  const doc = await db.collection(COLLECTIONS.COMPUTATIONS).findOne({ _id: new ObjectId(id) });
   if (!doc) return null;
   return { ...doc, _id: doc._id.toString() } as Computation;
 }
@@ -52,13 +50,13 @@ export async function getComputationsByUser(
 ): Promise<{ computations: Computation[]; hasMore: boolean; total: number }> {
   const db = getDb();
   const [docs, total] = await Promise.all([
-    db.collection(COLLECTION)
+    db.collection(COLLECTIONS.COMPUTATIONS)
       .find({ userId })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit + 1) // Fetch one extra to check if there are more
       .toArray(),
-    db.collection(COLLECTION).countDocuments({ userId })
+    db.collection(COLLECTIONS.COMPUTATIONS).countDocuments({ userId })
   ]);
   
   const hasMore = docs.length > limit;
@@ -73,7 +71,7 @@ export async function updateResultProgress(
   progress: number
 ): Promise<void> {
   const db = getDb();
-  await db.collection(COLLECTION).updateOne(
+  await db.collection(COLLECTIONS.COMPUTATIONS).updateOne(
     { _id: new ObjectId(computationId) },
     {
       $set: {
@@ -95,7 +93,7 @@ export async function updateResultComplete(
 ): Promise<void> {
   const db = getDb();
   
-  await db.collection(COLLECTION).updateOne(
+  await db.collection(COLLECTIONS.COMPUTATIONS).updateOne(
     { _id: new ObjectId(computationId) },
     {
       $set: {
@@ -117,7 +115,7 @@ export async function updateResultComplete(
       r => r.status === 'completed' || r.status === 'failed'
     );
     if (allComplete) {
-      await db.collection(COLLECTION).updateOne(
+      await db.collection(COLLECTIONS.COMPUTATIONS).updateOne(
         { _id: new ObjectId(computationId) },
         { $set: { status: 'completed', updatedAt: new Date() } }
       );
@@ -135,7 +133,7 @@ export async function findCompletedResult(
   
   // Find a computation with matching a, b, mode that has a completed result for the operation
   // Using $elemMatch ensures both operation and status match on the same array element
-  const computation = await db.collection(COLLECTION).findOne({
+  const computation = await db.collection(COLLECTIONS.COMPUTATIONS).findOne({
     a,
     b,
     mode,

@@ -1,9 +1,11 @@
 import type { Job } from 'bullmq';
-import { getConfig, calculateTotalProgress, type JobPayload } from '@mathstream/shared';
+import { getConfig, calculateTotalProgress, createNamedLogger, type JobPayload } from '@mathstream/shared';
 import { updateResultProgress, updateResultComplete, findCompletedResult, getComputation } from '@mathstream/db';
 import { getCachedResult, cacheResult, publishComputationUpdate } from '@mathstream/cache';
 import { calculateClassic } from './calculators/classic';
 import { calculateAI } from './calculators/ai';
+
+const logger = createNamedLogger('processor');
 
 async function publishUpdate(computationId: string): Promise<void> {
   const computation = await getComputation(computationId);
@@ -45,7 +47,7 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
   const { computationId, operation, a, b, mode, useCache } = job.data;
   const { JOB_DELAY_MS } = getConfig();
   
-  console.log(`Processing ${operation} (${mode} mode) for computation ${computationId}`);
+  logger.debug(`Processing ${operation} (${mode} mode) for computation ${computationId}`);
   
   // Only perform result reuse if useCache is true
   if (useCache) {
@@ -54,7 +56,7 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
     if (cachedResult) {
       await updateResultComplete(computationId, operation, cachedResult.result, cachedResult.error);
       await publishUpdate(computationId);
-      console.log(`Cache hit for ${operation}: ${cachedResult.result ?? cachedResult.error}`);
+      logger.debug(`Cache hit for ${operation}: ${cachedResult.result ?? cachedResult.error}`);
       return;
     }
     
@@ -64,7 +66,7 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
       await cacheResult(a, b, mode, operation, dbResult.result, dbResult.error);
       await updateResultComplete(computationId, operation, dbResult.result, dbResult.error);
       await publishUpdate(computationId);
-      console.log(`DB hit for ${operation}: ${dbResult.result ?? dbResult.error}`);
+      logger.debug(`DB hit for ${operation}: ${dbResult.result ?? dbResult.error}`);
       return;
     }
   }
@@ -95,7 +97,7 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
       await cacheResult(a, b, mode, operation, result, error);
       await updateResultComplete(computationId, operation, result, error);
       await publishUpdate(computationId);
-      console.log(`Completed ${operation} (${mode}): ${result ?? error}`);
+      logger.debug(`Completed ${operation} (${mode}): ${result ?? error}`);
     }
   }
 }

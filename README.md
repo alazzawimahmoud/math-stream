@@ -1,25 +1,26 @@
 # MathStream
 
-A modern queue-based computation engine built with Next.js, tRPC, BullMQ, MongoDB, Redis, and Google Gemini AI.
+A queue-based computation engine built with Next.js, tRPC, BullMQ, MongoDB, Redis, and Google Gemini AI.
 
-## Overview
+**🚀 Live Demo:** [math-stream-production.up.railway.app](https://math-stream-production.up.railway.app/)
 
-MathStream demonstrates a production-ready queue/worker architecture where users can submit mathematical computations that are processed asynchronously with real-time progress updates. Choose between classic mathematical calculations or AI-powered computations using Google Gemini.
+## What is MathStream?
+
+MathStream is a demo app that shows a production-ready queue/worker architecture. Users submit math computations that are processed asynchronously with real-time progress updates. You can choose between classic math calculations or AI-powered computations using Google Gemini.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Framework | Next.js 14 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | API | tRPC v11 + Zod |
 | Auth | BetterAuth + Google OAuth |
-| Database | MongoDB Native Driver + Zod |
-| Queue | BullMQ + Redis (concurrency: 4) |
-| Cache | Redis (completed computations) |
+| Database | MongoDB Native Driver |
+| Queue | BullMQ + Redis |
+| Cache | Redis |
 | AI | AI SDK + Google Gemini |
 | Styling | Tailwind CSS + shadcn/ui |
 | Monorepo | Turborepo + pnpm |
-| Deployment | Railway |
 
 ## Architecture
 
@@ -45,11 +46,10 @@ MathStream demonstrates a production-ready queue/worker architecture where users
 ## Features
 
 - **Parallel Processing**: All 4 operations (add, subtract, multiply, divide) run simultaneously
-- **Real-time Progress**: Randomized progress updates create a dynamic UI experience
+- **Real-time Progress**: Live progress updates as computations are processed
 - **Dual Computation Modes**: Toggle between Classic (math) and AI (Gemini) modes
-- **Smart Caching**: Completed computations are cached in Redis for instant retrieval
+- **Smart Caching**: Completed computations are cached in Redis
 - **Google OAuth**: Secure authentication with BetterAuth
-- **Error Handling**: Graceful handling of errors (e.g., division by zero)
 
 ## Project Structure
 
@@ -63,129 +63,132 @@ mathstream/
 │   ├── db/           # MongoDB client + repositories
 │   ├── queue/        # BullMQ queue setup
 │   ├── shared/       # Shared types, schemas, config
-│   └── typescript-config/  # Shared TS configs
+│   └── typescript-config/
 ├── docker-compose.yml
 └── turbo.json
 ```
+
+---
 
 ## Local Development
 
 ### Prerequisites
 
-- Node.js 20+
-- pnpm 9+
-- Docker (for MongoDB and Redis)
+- **Node.js** 20 or higher
+- **pnpm** 9 or higher
+- **Docker** (for MongoDB and Redis)
 
-### Setup
-
-1. **Clone the repository**
+### Step 1: Clone and Install
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/alazzawimahmoud/math-stream.git
 cd mathstream
-```
-
-2. **Install dependencies**
-
-```bash
 pnpm install
 ```
 
-3. **Set up environment variables**
+### Step 2: Start MongoDB and Redis
 
 ```bash
-cp .env.example .env
-```
-
-Edit `.env` and configure:
-- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from [Google Cloud Console](https://console.cloud.google.com/)
-- `GOOGLE_GENERATIVE_AI_API_KEY` from [Google AI Studio](https://aistudio.google.com/)
-- `BETTER_AUTH_SECRET` (generate with `openssl rand -base64 32`)
-
-4. **Start local services**
-
-```bash
-# Start MongoDB and Redis
 docker-compose up -d
-
-# Or use the dev script
-./scripts/dev.sh
 ```
 
-5. **Run development servers**
+This starts:
+- MongoDB on port `27017`
+- Redis on port `6379`
+
+### Step 3: Create Environment File
+
+Copy the example environment file:
+
+```bash
+cp apps/web/.env.example apps/web/.env
+```
+
+Then edit `apps/web/.env` with your values:
+
+```env
+# Database
+MONGODB_URL=mongodb://localhost:27017/mathstream
+REDIS_URL=redis://localhost:6379
+
+# Auth (generate with: openssl rand -base64 32)
+BETTER_AUTH_SECRET=your-secret-key-min-32-characters-long
+BETTER_AUTH_URL=http://localhost:3000
+
+# Google OAuth (from Google Cloud Console)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Gemini AI (from Google AI Studio)
+GOOGLE_GENERATIVE_AI_API_KEY=your-gemini-api-key
+
+# Optional
+JOB_DELAY_MS=3000
+```
+
+### Step 4: Set Up Google OAuth
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project (or select an existing one)
+3. Navigate to **APIs & Services** → **Credentials**
+4. Click **Create Credentials** → **OAuth client ID**
+5. Select **Web application**
+6. Add this authorized redirect URI:
+   ```
+   http://localhost:3000/api/auth/callback/google
+   ```
+7. Copy the **Client ID** and **Client Secret** to your `.env` file
+
+### Step 5: Set Up Gemini API (Optional)
+
+> Skip this step if you only want to use Classic computation mode.
+
+1. Go to [Google AI Studio](https://aistudio.google.com/)
+2. Create an API key
+3. Add it to your `.env` file as `GOOGLE_GENERATIVE_AI_API_KEY`
+
+### Step 6: Run the App
 
 ```bash
 pnpm dev
 ```
 
 This starts:
-- Web app at http://localhost:3000
-- Worker process listening for jobs
+- **Web app** at http://localhost:3000
+- **Worker** listening for queue jobs
 
-### Google OAuth Setup
+---
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. Enable Google+ API
-4. Go to "Credentials" → "Create Credentials" → "OAuth client ID"
-5. Select "Web application"
-6. Add authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
-7. Copy Client ID and Client Secret to `.env`
+## Quick Start (One Command)
 
-### Gemini API Setup
+If you have all environment variables configured, you can start everything at once:
 
-1. Go to [Google AI Studio](https://aistudio.google.com/)
-2. Create an API key
-3. Add to `.env` as `GOOGLE_GENERATIVE_AI_API_KEY`
+```bash
+./scripts/dev.sh
+```
 
-## Design Decisions
+Or manually:
 
-### Why Queue-Based Architecture?
+```bash
+pnpm dev:full
+```
 
-- **Scalability**: Workers can be scaled independently
-- **Reliability**: Failed jobs can be retried
-- **Real-time Updates**: Progress tracking for long-running operations
-- **Resource Management**: Control concurrency and prevent overload
-
-### Why BullMQ?
-
-- Redis-backed for persistence and distribution
-- Built-in support for concurrency, retries, and job priorities
-- Clean API with TypeScript support
-
-### Why Dual Computation Modes?
-
-- **Classic Mode**: Instant, deterministic results for production use
-- **AI Mode**: Demonstrates integration with LLMs for complex scenarios
-- Users can choose based on their needs
-
-### Why MongoDB?
-
-- Flexible document model for computation results
-- Native support in BetterAuth
-- Easy to deploy on Railway
-
-### Why Redis for Caching?
-
-- Already used for BullMQ queue
-- Sub-millisecond latency
-- TTL-based expiration for completed computations
+---
 
 ## Available Scripts
 
-```bash
-# Development
-pnpm dev           # Start all services in dev mode
-pnpm dev:services  # Start Docker containers
-pnpm dev:full      # Start containers + dev servers
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start web app and worker in dev mode |
+| `pnpm dev:services` | Start MongoDB and Redis via Docker |
+| `pnpm dev:full` | Start Docker services + dev servers |
+| `pnpm build` | Build all packages |
+| `pnpm test` | Run all tests |
+| `pnpm test:coverage` | Run tests with coverage |
+| `pnpm lint` | Run linters |
+| `pnpm clean` | Clean build artifacts |
 
-# Build
-pnpm build         # Build all packages
-
-# Utilities
-pnpm lint          # Run linters
-pnpm clean         # Clean build artifacts
-```
+---
 
 ## Environment Variables
 
@@ -199,6 +202,8 @@ pnpm clean         # Clean build artifacts
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | Yes |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini API key | Yes |
 | `JOB_DELAY_MS` | Artificial delay for jobs (default: 3000) | No |
+
+---
 
 ## Railway Deployment
 
@@ -223,97 +228,63 @@ pnpm clean         # Clean build artifacts
 
 ### Deployment Steps
 
-1. **Push code to GitHub**
-
-```bash
-git push origin main
-```
+1. **Push to GitHub**
 
 2. **Create Railway Project**
    - Go to [Railway](https://railway.app/)
-   - Click "New Project" → "Deploy from GitHub repo"
+   - Click **New Project** → **Deploy from GitHub repo**
    - Select your repository
 
-3. **Add Database Plugins**
-   - Click "New" → "Database" → "Add MongoDB"
-   - Click "New" → "Database" → "Add Redis"
+3. **Add Databases**
+   - Click **New** → **Database** → **Add MongoDB**
+   - Click **New** → **Database** → **Add Redis**
 
 4. **Configure Web Service**
-   - Click "New" → "GitHub Repo" → Select your repo
-   - Set the following:
-     - **Root Directory**: Leave empty (monorepo root)
-     - **Dockerfile Path**: `apps/web/Dockerfile`
-   - Add environment variables (see below)
+   - Click **New** → **GitHub Repo** → Select your repo
+   - Set **Dockerfile Path**: `apps/web/Dockerfile`
 
 5. **Configure Worker Service**
-   - Click "New" → "GitHub Repo" → Select your repo
-   - Set the following:
-     - **Root Directory**: Leave empty (monorepo root)
-     - **Dockerfile Path**: `apps/worker/Dockerfile`
-   - Add environment variables (see below)
+   - Click **New** → **GitHub Repo** → Select your repo
+   - Set **Dockerfile Path**: `apps/worker/Dockerfile`
 
-6. **Set Environment Variables**
+6. **Set Environment Variables** (for both services)
 
-For both Web and Worker services:
-
-| Variable | Value |
-|----------|-------|
-| `MONGODB_URL` | `${{MongoDB.MONGO_URL}}` (Railway reference) |
-| `REDIS_URL` | `${{Redis.REDIS_URL}}` (Railway reference) |
-| `BETTER_AUTH_SECRET` | Generate: `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | Your Railway web URL (e.g., `https://your-app.up.railway.app`) |
-| `GOOGLE_CLIENT_ID` | From Google Cloud Console |
-| `GOOGLE_CLIENT_SECRET` | From Google Cloud Console |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | From Google AI Studio |
-| `JOB_DELAY_MS` | `3000` (optional) |
+   | Variable | Value |
+   |----------|-------|
+   | `MONGODB_URL` | `${{MongoDB.MONGO_URL}}` |
+   | `REDIS_URL` | `${{Redis.REDIS_URL}}` |
+   | `BETTER_AUTH_SECRET` | Generate with `openssl rand -base64 32` |
+   | `BETTER_AUTH_URL` | Your Railway web URL |
+   | `GOOGLE_CLIENT_ID` | From Google Cloud Console |
+   | `GOOGLE_CLIENT_SECRET` | From Google Cloud Console |
+   | `GOOGLE_GENERATIVE_AI_API_KEY` | From Google AI Studio |
 
 7. **Update Google OAuth Redirect URI**
-   - Go to [Google Cloud Console](https://console.cloud.google.com/) → Credentials
-   - Edit your OAuth 2.0 Client ID
-   - Add authorized redirect URI: `https://your-app.up.railway.app/api/auth/callback/google`
+   - Add: `https://your-app.up.railway.app/api/auth/callback/google`
 
-8. **Deploy**
-   - Railway will automatically build and deploy both services
-   - Monitor deployment in the Railway dashboard
-
-### Environment Variable References
-
-Railway supports variable references between services:
-
-```
-MONGODB_URL=${{MongoDB.MONGO_URL}}
-REDIS_URL=${{Redis.REDIS_URL}}
-```
-
-This automatically injects the connection strings from the database plugins.
+8. **Deploy** - Railway will build and deploy automatically
 
 ### Scaling
 
-To scale the worker for higher throughput:
+To scale the worker, go to Worker service → **Settings** → **Scaling** and increase replicas. Each worker runs with concurrency of 4.
 
-1. Go to the Worker service in Railway
-2. Click "Settings" → "Scaling"
-3. Increase the number of replicas
+---
 
-Each worker instance runs with `concurrency: 4`, so 2 replicas = 8 concurrent jobs.
+## Design Decisions
 
-### Monitoring
+### Why Queue-Based Architecture?
 
-- **Logs**: Available in Railway dashboard for each service
-- **Metrics**: Railway provides CPU, memory, and network metrics
-- **Job Queue**: Connect to Redis and use BullMQ dashboard tools
+- **Scalability**: Workers can be scaled independently
+- **Reliability**: Failed jobs can be retried
+- **Real-time Updates**: Progress tracking for long-running operations
 
-### Costs
+### Why Dual Computation Modes?
 
-Railway's pricing is usage-based:
-- **Web Service**: ~$5-10/month for light usage
-- **Worker Service**: ~$5-10/month for light usage
-- **MongoDB**: ~$5/month for 1GB
-- **Redis**: ~$3/month for 512MB
+- **Classic Mode**: Instant, deterministic results
+- **AI Mode**: Demonstrates LLM integration for complex scenarios
 
-Estimated total: ~$18-28/month for a basic deployment.
+---
 
 ## License
 
 MIT
-

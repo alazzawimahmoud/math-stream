@@ -44,14 +44,11 @@ vi.mock('next/headers', () => ({
 
 // Import after mocks
 const { computationRouter } = await import('@/server/routers/computation');
-import { createContext } from '@/server/trpc';
+import { createTestCaller as createCaller } from '../../helpers';
 
 // Helper to create a caller with session
 function createTestCaller(userId: string | null = 'test-user-123') {
-  const ctx = {
-    session: userId ? { user: { id: userId, name: 'Test User', email: 'test@example.com' } } : null,
-  };
-  return computationRouter.createCaller(ctx as any);
+  return createCaller(computationRouter, userId);
 }
 
 describe('computationRouter', () => {
