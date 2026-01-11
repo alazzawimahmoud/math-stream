@@ -1,9 +1,22 @@
 import type { Job } from 'bullmq';
-import { getConfig, type JobPayload } from '@mathstream/shared';
-import { updateResultProgress, updateResultComplete, findCompletedResult } from '@mathstream/db';
-import { getCachedResult, cacheResult } from '@mathstream/cache';
+import { getConfig, calculateTotalProgress, type JobPayload } from '@mathstream/shared';
+import { updateResultProgress, updateResultComplete, findCompletedResult, getComputation } from '@mathstream/db';
+import { getCachedResult, cacheResult, publishComputationUpdate } from '@mathstream/cache';
 import { calculateClassic } from './calculators/classic';
 import { calculateAI } from './calculators/ai';
+
+async function publishUpdate(computationId: string): Promise<void> {
+  const computation = await getComputation(computationId);
+  if (computation) {
+    const totalProgress = calculateTotalProgress(computation.results);
+    await publishComputationUpdate(computationId, {
+      computationId,
+      status: computation.status,
+      results: computation.results,
+      totalProgress,
+    });
+  }
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -40,6 +53,7 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
     const cachedResult = await getCachedResult(a, b, mode, operation);
     if (cachedResult) {
       await updateResultComplete(computationId, operation, cachedResult.result, cachedResult.error);
+      await publishUpdate(computationId);
       console.log(`Cache hit for ${operation}: ${cachedResult.result ?? cachedResult.error}`);
       return;
     }
@@ -49,6 +63,7 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
     if (dbResult) {
       await cacheResult(a, b, mode, operation, dbResult.result, dbResult.error);
       await updateResultComplete(computationId, operation, dbResult.result, dbResult.error);
+      await publishUpdate(computationId);
       console.log(`DB hit for ${operation}: ${dbResult.result ?? dbResult.error}`);
       return;
     }
@@ -69,6 +84,7 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
     
     if (!isLastStep) {
       await updateResultProgress(computationId, operation, progress);
+      await publishUpdate(computationId);
     } else {
       // Use appropriate calculator based on mode
       const { result, error } = mode === 'ai' 
@@ -78,6 +94,7 @@ export async function processJob(job: Job<JobPayload>): Promise<void> {
       // 4. Cache the new result after computation
       await cacheResult(a, b, mode, operation, result, error);
       await updateResultComplete(computationId, operation, result, error);
+      await publishUpdate(computationId);
       console.log(`Completed ${operation} (${mode}): ${result ?? error}`);
     }
   }

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc';
-import { CreateComputationInput } from '@mathstream/shared';
+import { CreateComputationInput, calculateTotalProgress } from '@mathstream/shared';
 import { createComputation, getComputation, getComputationsByUser, connectDb, getUserPreferences } from '@mathstream/db';
 import { addComputationJobs } from '@mathstream/queue';
 import { getCachedComputation, cacheComputation } from '@mathstream/cache';
@@ -50,9 +50,7 @@ export const computationRouter = router({
       // Check cache first
       const cached = await getCachedComputation(input.id);
       if (cached) {
-        const totalProgress = Math.round(
-          cached.results.reduce((sum, r) => sum + r.progress, 0) / 4
-        );
+        const totalProgress = calculateTotalProgress(cached.results);
         return { ...cached, totalProgress, fromCache: true };
       }
       
@@ -68,9 +66,7 @@ export const computationRouter = router({
       }
       
       // Calculate total progress
-      const totalProgress = Math.round(
-        computation.results.reduce((sum, r) => sum + r.progress, 0) / 4
-      );
+      const totalProgress = calculateTotalProgress(computation.results);
       
       return { ...computation, totalProgress, fromCache: false };
     }),

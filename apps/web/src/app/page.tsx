@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { ComputeForm } from '@/components/compute-form';
 import { ResultsTable } from '@/components/results-table';
 import { trpc } from '@/trpc/client';
@@ -13,6 +13,7 @@ import { GoogleIcon } from '@/components/icons/google';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/components/logout-button';
 import { useSession, signIn } from '@/lib/auth-client';
+import { useComputationSubscription } from '@/hooks/use-computation-subscription';
 import type { Computation } from '@mathstream/shared';
 
 function AppContent() {
@@ -22,6 +23,14 @@ function AppContent() {
   const optimisticIdsRef = useRef<Set<string>>(new Set());
   const { data: session, isPending: isSessionLoading } = useSession();
   const isSignedIn = !!session?.user;
+
+  // Pagination state for history (declared early so it can be used in useMemo)
+  const [historyItems, setHistoryItems] = useState<Computation[]>([]);
+  const [historySkip, setHistorySkip] = useState(0);
+  const [hasMoreHistory, setHasMoreHistory] = useState(false);
+  const [totalHistory, setTotalHistory] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const HISTORY_LIMIT = 20;
 
   // Clear computation and history when user signs out
   useEffect(() => {
@@ -36,21 +45,46 @@ function AppContent() {
     }
   }, [isSignedIn]);
 
-  // Fetch current computation with polling
-  const { data: currentComputation, isLoading: isLoadingCurrent } = trpc.computation.getStatus.useQuery(
+  // Check if current computation is active (needs live updates)
+  const isCurrentComputationActive = currentComputationId ? activeComputationIds.has(currentComputationId) : false;
+
+  // Fetch current computation from tRPC (for initial load and completed computations)
+  const { data: trpcComputation, isLoading: isLoadingCurrent } = trpc.computation.getStatus.useQuery(
     { id: currentComputationId! },
     {
-      enabled: !!currentComputationId && isSignedIn,
-      refetchInterval: (query) => {
-        // Stop polling when computation is complete or from cache
-        const data = query.state.data;
-        if (data?.status === 'completed' || data?.fromCache) {
-          return false;
-        }
-        return 500; // Poll every 500ms
-      },
+      enabled: !!currentComputationId && isSignedIn && !isCurrentComputationActive,
     }
   );
+
+  // Subscribe to SSE updates for active computations
+  const { data: sseUpdate } = useComputationSubscription(
+    isCurrentComputationActive ? currentComputationId : null,
+    {
+      enabled: isSignedIn && isCurrentComputationActive,
+    }
+  );
+
+  // Combine tRPC data and SSE updates
+  const currentComputation = useMemo(() => {
+    if (sseUpdate && currentComputationId === sseUpdate.computationId) {
+      // Use SSE data for active computations
+      return {
+        _id: sseUpdate.computationId,
+        status: sseUpdate.status,
+        results: sseUpdate.results,
+        totalProgress: sseUpdate.totalProgress,
+        fromCache: false,
+        // These fields are not in SSE updates, but we have them from the history
+        a: historyItems.find(h => h._id === sseUpdate.computationId)?.a ?? 0,
+        b: historyItems.find(h => h._id === sseUpdate.computationId)?.b ?? 0,
+        mode: historyItems.find(h => h._id === sseUpdate.computationId)?.mode ?? 'classic',
+        userId: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Computation & { totalProgress: number; fromCache: boolean };
+    }
+    return trpcComputation ?? null;
+  }, [sseUpdate, trpcComputation, currentComputationId, historyItems]);
 
   // Update history items when current computation updates (for live status in list)
   useEffect(() => {
@@ -73,14 +107,6 @@ function AppContent() {
       }
     }
   }, [currentComputation, activeComputationIds]);
-
-  // Pagination state for history
-  const [historyItems, setHistoryItems] = useState<Computation[]>([]);
-  const [historySkip, setHistorySkip] = useState(0);
-  const [hasMoreHistory, setHasMoreHistory] = useState(false);
-  const [totalHistory, setTotalHistory] = useState(0);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const HISTORY_LIMIT = 20;
 
   // Fetch history (only when signed in)
   const { data: historyData, isLoading: isLoadingHistory, refetch: refetchHistory } = trpc.computation.getHistory.useQuery(
